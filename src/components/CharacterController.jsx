@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import InfiniteRoad from './InfinityRoad';
 
 const CharacterController = () => {
   const containerRef = useRef(null);
@@ -14,6 +15,7 @@ const CharacterController = () => {
   const [clock] = useState(new THREE.Clock());
   const [isGameMode, setIsGameMode] = useState(false);
   const initialPosition = useRef(new THREE.Vector3(0, 0, 0));
+  const initialCameraPosition = useRef(null);
 
   // Initialize Three.js scene
   useEffect(() => {
@@ -21,15 +23,14 @@ const CharacterController = () => {
 
     // Scene setup
     const newScene = new THREE.Scene();
-    newScene.background = new THREE.Color(0xe0e0e0);
-    newScene.fog = new THREE.Fog(0xe0e0e0, 20, 100);
+    newScene.background = new THREE.Color(0x87ceeb); // Sky blue background
 
     // Camera setup
     const newCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 100);
     newCamera.position.set(-5, 3, 10);
     newCamera.lookAt(0, 2, 0);
+    initialCameraPosition.current = newCamera.position.clone();
 
-    // Renderer setup
     const newRenderer = new THREE.WebGLRenderer({ antialias: true });
     newRenderer.setPixelRatio(window.devicePixelRatio);
     newRenderer.setSize(window.innerWidth, window.innerHeight);
@@ -44,33 +45,19 @@ const CharacterController = () => {
     dirLight.position.set(0, 20, 10);
     newScene.add(dirLight);
 
-    // Ground
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(2000, 2000),
-      new THREE.MeshPhongMaterial({ color: 0xcbcbcb, depthWrite: false })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    newScene.add(ground);
-
-    const grid = new THREE.GridHelper(200, 40, 0x000000, 0x000000);
-    grid.material.opacity = 0.2;
-    grid.material.transparent = true;
-    newScene.add(grid);
-
     setScene(newScene);
     setCamera(newCamera);
     setRenderer(newRenderer);
 
-    // Load model
+    // Load character model
     const loader = new GLTFLoader();
     loader.load('models/gltf/RobotExpressive/RobotExpressive.glb', (gltf) => {
       const newModel = gltf.scene;
+      newModel.position.y = 0.5; // Lift character slightly above road
       newScene.add(newModel);
       setModel(newModel);
-      // Store initial position
       initialPosition.current.copy(newModel.position);
 
-      // Setup animations
       const newMixer = new THREE.AnimationMixer(newModel);
       const newActions = {};
       
@@ -86,8 +73,8 @@ const CharacterController = () => {
 
       setMixer(newMixer);
       setActions(newActions);
-      setActiveAction(newActions['Walking']);
-      newActions['Walking'].play();
+      setActiveAction(newActions['Dance']);
+      newActions['Dance'].play();
     });
 
     return () => {
@@ -95,26 +82,24 @@ const CharacterController = () => {
     };
   }, []);
 
-  // Animation loop with camera follow
+  // Animation loop
   useEffect(() => {
-    if (!renderer || !scene || !camera || !mixer || !model) return;
+    if (!renderer || !scene || !camera || !mixer) return;
 
     const animate = () => {
       requestAnimationFrame(animate);
       const delta = clock.getDelta();
       mixer.update(delta);
 
-      if (isGameMode) {
-        // Update camera position to follow character
+      // Update camera for game mode
+      if (isGameMode && model) {
         const idealOffset = new THREE.Vector3(0, 5, -15);
         const idealLookat = new THREE.Vector3(0, 2, 10);
-
-        // Transform ideal offset to world space
+        
         const modelPosition = model.position.clone();
         const currentOffset = idealOffset.clone();
         currentOffset.applyMatrix4(model.matrix);
         
-        // Update camera position and target
         camera.position.lerp(currentOffset, 0.1);
         const targetLook = modelPosition.clone().add(idealLookat);
         camera.lookAt(targetLook);
@@ -149,60 +134,48 @@ const CharacterController = () => {
   // Handle movement
   const moveCharacter = (direction) => {
     if (!model) return;
-    const moveDistance = 0.5;
+    const moveDistance = 3;
     
     if (direction === 'left') {
-      model.position.x -= moveDistance;
-      if (isGameMode) {
-        model.position.z += moveDistance * 0.3; // Slight diagonal movement
-      }
-    } else if (direction === 'right') {
       model.position.x += moveDistance;
-      if (isGameMode) {
-        model.position.z += moveDistance * 0.3; // Slight diagonal movement
-      }
+    } else if (direction === 'right') {
+      model.position.x -= moveDistance;
     }
+    
+    // Clamp character position to road width
+    model.position.x = THREE.MathUtils.clamp(model.position.x, -8, 8);
   };
 
-  // Handle jump in game mode
+  // Handle jump
   const handleGameJump = () => {
     if (!isGameMode || !actions['Jump']) return;
     
     const jumpAction = actions['Jump'];
     const runningAction = actions['Running'];
     
-    // Play jump animation
-    jumpAction.reset().play();
+    jumpAction.reset();
+    jumpAction.setEffectiveTimeScale(2.0);
+    jumpAction.play();
     
-    // After jump animation completes, return to running
     setTimeout(() => {
       jumpAction.stop();
       runningAction.play();
-    }, 1000); // Adjust timing based on your jump animation length
+    }, 400);
   };
 
-  // Handle game mode toggle
+  // Toggle game mode
   const toggleGameMode = () => {
     setIsGameMode(!isGameMode);
     if (!isGameMode) {
-      // Start game mode
       fadeToAction('Running');
-      // Reset camera position behind character
       if (camera && model) {
         camera.position.set(model.position.x, model.position.y + 3, model.position.z - 5);
         camera.lookAt(model.position.x, model.position.y + 2, model.position.z + 10);
       }
     } else {
-      // End game mode
-      fadeToAction('Walking');
-      // Reset character and camera to original position
+      fadeToAction('Dance');
       if (model) {
-        model.position.copy(initialPosition.current);
         model.rotation.set(0, 0, 0);
-      }
-      if (camera) {
-        camera.position.set(-5, 3, 10);
-        camera.lookAt(0, 2, 0);
       }
     }
   };
@@ -211,9 +184,10 @@ const CharacterController = () => {
     <div className="w-full h-screen relative">
       <div ref={containerRef} className="w-full h-full" />
       
-      {/* Control buttons */}
+      {/* Add InfiniteRoad component */}
+      {scene && <InfiniteRoad scene={scene} isGameMode={isGameMode} />}
+      
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col gap-4">
-        {/* Game mode toggle button */}
         <button
           className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold"
           onClick={toggleGameMode}
@@ -221,7 +195,6 @@ const CharacterController = () => {
           {isGameMode ? 'Stop Game' : 'Play Game'}
         </button>
 
-        {/* Movement and jump buttons */}
         <div className="flex justify-center gap-4">
           <button
             className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
@@ -245,7 +218,6 @@ const CharacterController = () => {
           </button>
         </div>
 
-        {/* Only show state buttons when not in game mode */}
         {!isGameMode && (
           <>
             <div className="flex justify-center gap-2">
