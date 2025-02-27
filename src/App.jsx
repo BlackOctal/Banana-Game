@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import CharacterController from './components/CharacterController';
+import CharacterController from './components/CharacterController/CharacterController';
 
 function App() {
   return (

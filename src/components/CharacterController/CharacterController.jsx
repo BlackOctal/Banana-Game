@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import InfiniteRoad from './InfinityRoad';
+import InfiniteRoad from '../InfinityRoad/InfinityRoad';
+import './CharacterController.css';
+import Obstacles from '../Obstacles/Obstacles';
 
 const CharacterController = () => {
   const containerRef = useRef(null);
@@ -16,6 +18,55 @@ const CharacterController = () => {
   const [isGameMode, setIsGameMode] = useState(false);
   const initialPosition = useRef(new THREE.Vector3(0, 0, 0));
   const initialCameraPosition = useRef(null);
+
+  const [gameOver, setGameOver] = useState(false);
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!isGameMode) return;
+
+      switch (event.key) {
+        case 'ArrowLeft':
+          moveCharacter('left');
+          break;
+        case 'ArrowRight':
+          moveCharacter('right');
+          break;
+        case ' ': // Spacebar
+        case 'ArrowUp':
+          handleGameJump();
+          break;
+        default:
+          break;
+      }
+    };
+
+    // Add event listener
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isGameMode]); 
+
+    // Handle collision with obstacles
+    const handleCollision = (obstacle) => {
+      setGameOver(true);
+      fadeToAction('Death');
+      setIsGameMode(false);
+      
+      // Reset game after 2 seconds
+      setTimeout(() => {
+        setGameOver(false);
+        setScore(0);
+        if (model) {
+          model.position.copy(initialPosition.current);
+        }
+        fadeToAction('Dance');
+      }, 2000);
+    };
 
   // Initialize Three.js scene
   useEffect(() => {
@@ -65,7 +116,7 @@ const CharacterController = () => {
         const action = newMixer.clipAction(clip);
         newActions[clip.name] = action;
         
-        if (['Jump', 'Death'].includes(clip.name)) {
+        if (['Death'].includes(clip.name)) {
           action.clampWhenFinished = true;
           action.loop = THREE.LoopOnce;
         }
@@ -82,6 +133,17 @@ const CharacterController = () => {
     };
   }, []);
 
+   // Update score
+   useEffect(() => {
+    if (isGameMode) {
+      const scoreInterval = setInterval(() => {
+        setScore(prev => prev + 1);
+      }, 1000);
+
+      return () => clearInterval(scoreInterval);
+    }
+  }, [isGameMode]);
+
   // Animation loop
   useEffect(() => {
     if (!renderer || !scene || !camera || !mixer) return;
@@ -93,8 +155,8 @@ const CharacterController = () => {
 
       // Update camera for game mode
       if (isGameMode && model) {
-        const idealOffset = new THREE.Vector3(0, 5, -15);
-        const idealLookat = new THREE.Vector3(0, 2, 10);
+        const idealOffset = new THREE.Vector3(0, 10, -15);  // Increased y from 5 to 10
+        const idealLookat = new THREE.Vector3(0, 2, 10);    
         
         const modelPosition = model.position.clone();
         const currentOffset = idealOffset.clone();
@@ -181,60 +243,71 @@ const CharacterController = () => {
   };
 
   return (
-    <div className="w-full h-screen relative">
-      <div ref={containerRef} className="w-full h-full" />
+    <div className="container">
+      <div ref={containerRef} className="canvas-container" />
       
-      {/* Add InfiniteRoad component */}
-      {scene && <InfiniteRoad scene={scene} isGameMode={isGameMode} />}
+      {scene && (
+        <>
+          <InfiniteRoad scene={scene} isGameMode={isGameMode} />
+          <Obstacles 
+            scene={scene}
+            isGameMode={isGameMode}
+            playerPosition={model?.position}
+            onCollision={handleCollision}
+          />
+        </>
+      )}
       
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col gap-4">
+      {/* Score Display */}
+      {isGameMode && (
+        <div className="score-display">
+          Score: {score}
+        </div>
+      )}
+  
+      {/* Game Over Message */}
+      {gameOver && (
+        <div className="game-over">
+          <h2>Game Over!</h2>
+          <p>Final Score: {score}</p>
+        </div>
+      )}
+  
+      {/* Updated Game Instructions */}
+      {isGameMode && !gameOver && (
+        <div className="instructions">
+          <p>Use ← → arrow keys to move</p>
+          <p>Press ↑ or Space to jump</p>
+        </div>
+      )}
+      
+      {/* Game Controls - Removed movement buttons, kept main toggle */}
+      <div className="controls-container">
         <button
-          className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 font-bold"
+          className="button button-red"
           onClick={toggleGameMode}
         >
-          {isGameMode ? 'Stop Game' : 'Play Game'}
+          {isGameMode ? 'Stop Game' : 'Start Game'}
         </button>
-
-        <div className="flex justify-center gap-4">
-          <button
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-            onClick={() => moveCharacter('left')}
-          >
-            Left
-          </button>
-          {isGameMode && (
-            <button
-              className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
-              onClick={handleGameJump}
-            >
-              Jump
-            </button>
-          )}
-          <button
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-            onClick={() => moveCharacter('right')}
-          >
-            Right
-          </button>
-        </div>
-
+  
+        {/* Animation Controls (Only shown when not in game mode) */}
         {!isGameMode && (
           <>
-            <div className="flex justify-center gap-2">
+            <div className="button-row">
               {['Walking', 'Running', 'Dance', 'Death'].map((state) => (
                 <button
                   key={state}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                  className="button button-green"
                   onClick={() => fadeToAction(state)}
                 >
                   {state}
                 </button>
               ))}
             </div>
-
-            <div className="flex justify-center">
+  
+            <div className="button-row">
               <button
-                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+                className="button button-purple"
                 onClick={() => {
                   fadeToAction('Jump');
                   setTimeout(() => {
@@ -247,6 +320,11 @@ const CharacterController = () => {
             </div>
           </>
         )}
+      </div>
+  
+      {/* High Score Display */}
+      <div className="high-score">
+        High Score: {Math.max(score, localStorage.getItem('highScore') || 0)}
       </div>
     </div>
   );
