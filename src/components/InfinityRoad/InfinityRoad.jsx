@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import * as THREE from 'three';
 
-const ROAD_LENGTH = 200;
+const ROAD_LENGTH = 100;
 
 const FixedRoad = ({ scene }) => {
   useEffect(() => {
     if (!scene) return;
 
     // Create single road with fixed length
-    const roadGeometry = new THREE.PlaneGeometry(30, ROAD_LENGTH);
+    const roadGeometry = new THREE.PlaneGeometry(50, ROAD_LENGTH);
     const roadMaterial = new THREE.MeshStandardMaterial({
       color: 0x333333,
       side: THREE.DoubleSide,

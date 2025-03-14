@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import InfiniteRoad from '../InfinityRoad/InfinityRoad';
@@ -6,6 +7,7 @@ import './CharacterController.css';
 import Obstacles from '../Obstacles/Obstacles';
 
 const CharacterController = () => {
+  const navigate = useNavigate();
   const containerRef = useRef(null);
   const [scene, setScene] = useState(null);
   const [camera, setCamera] = useState(null);
@@ -21,6 +23,53 @@ const CharacterController = () => {
 
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Load user data
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user) {
+      setCurrentUser(user);
+      const storedHighScore = user.highScore || 0;
+      setHighScore(storedHighScore);
+    } else {
+      // Get high score from localStorage if no user is logged in
+      const localHighScore = parseInt(localStorage.getItem('highScore') || '0');
+      setHighScore(localHighScore);
+    }
+  }, []);
+
+  // Scroll to top of the page when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Update high score
+  useEffect(() => {
+    if (score > highScore) {
+      setHighScore(score);
+      
+      if (currentUser) {
+        // Update user's high score
+        const updatedUser = { ...currentUser, highScore: score };
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        
+        // Update users array if needed
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const updatedUsers = users.map(user => {
+          if (user.username === currentUser.username) {
+            return { ...user, highScore: score };
+          }
+          return user;
+        });
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+      } else {
+        // Store high score in localStorage for non-logged in users
+        localStorage.setItem('highScore', score.toString());
+      }
+    }
+  }, [score, highScore, currentUser]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -51,27 +100,25 @@ const CharacterController = () => {
     };
   }, [isGameMode]); 
 
-    // Handle collision with obstacles
-    const handleCollision = (obstacle) => {
-      setGameOver(true);
-      fadeToAction('Death');
-      setIsGameMode(false);
-      
-      // Reset game after 2 seconds
-      setTimeout(() => {
-        setGameOver(false);
-        setScore(0);
-        if (model) {
-          model.position.copy(initialPosition.current);
-        }
-        fadeToAction('Dance');
-      }, 2000);
-    };
+  // Handle collision with obstacles
+  const handleCollision = (obstacle) => {
+    setGameOver(true);
+    
+    // Stop all current animations before playing death
+    if (mixer) {
+      mixer.stopAllAction();
+    }
+    
+    fadeToAction('Death');
+    setIsGameMode(false);
+  };
 
   // Initialize Three.js scene
   useEffect(() => {
     if (!containerRef.current) return;
 
+    console.log("Initializing scene");
+    
     // Scene setup
     const newScene = new THREE.Scene();
     newScene.background = new THREE.Color(0x87ceeb); // Sky blue background
@@ -100,41 +147,71 @@ const CharacterController = () => {
     setCamera(newCamera);
     setRenderer(newRenderer);
 
+    console.log("Scene setup complete");
+
     // Load character model
     const loader = new GLTFLoader();
-    loader.load('models/gltf/RobotExpressive/RobotExpressive.glb', (gltf) => {
-      const newModel = gltf.scene;
-      newModel.position.y = 0.5; // Lift character slightly above road
-      newScene.add(newModel);
-      setModel(newModel);
-      initialPosition.current.copy(newModel.position);
+    loader.load(
+      'models/gltf/RobotExpressive/RobotExpressive.glb', 
+      (gltf) => {
+        console.log("Model loaded successfully", gltf);
+        const newModel = gltf.scene;
+        newModel.position.y = 0.5; // Lift character slightly above road
+        newScene.add(newModel);
+        setModel(newModel);
+        initialPosition.current.copy(newModel.position);
 
-      const newMixer = new THREE.AnimationMixer(newModel);
-      const newActions = {};
-      
-      gltf.animations.forEach((clip) => {
-        const action = newMixer.clipAction(clip);
-        newActions[clip.name] = action;
+        const newMixer = new THREE.AnimationMixer(newModel);
+        setMixer(newMixer);
         
-        if (['Death'].includes(clip.name)) {
-          action.clampWhenFinished = true;
-          action.loop = THREE.LoopOnce;
-        }
-      });
+        const newActions = {};
+        gltf.animations.forEach((clip) => {
+          const action = newMixer.clipAction(clip);
+          newActions[clip.name] = action;
+          
+          if (['Death'].includes(clip.name)) {
+            action.clampWhenFinished = true;
+            action.loop = THREE.LoopOnce;
+          }
+        });
 
-      setMixer(newMixer);
-      setActions(newActions);
-      setActiveAction(newActions['Dance']);
-      newActions['Dance'].play();
-    });
+        setActions(newActions);
+        
+        // Play initial animation
+        if (newActions['Dance']) {
+          newActions['Dance'].reset().play();
+          setActiveAction(newActions['Dance']);
+        }
+      },
+      (xhr) => {
+        console.log(`${(xhr.loaded / xhr.total) * 100}% loaded`);
+      },
+      (error) => {
+        console.error("Error loading model:", error);
+      }
+    );
+
+    // Handle window resize
+    const handleResize = () => {
+      if (camera && renderer) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      containerRef.current?.removeChild(renderer.domElement);
+      window.removeEventListener('resize', handleResize);
+      if (containerRef.current && renderer) {
+        containerRef.current.removeChild(renderer.domElement);
+      }
     };
   }, []);
 
-   // Update score
-   useEffect(() => {
+  // Update score
+  useEffect(() => {
     if (isGameMode) {
       const scoreInterval = setInterval(() => {
         setScore(prev => prev + 1);
@@ -175,15 +252,22 @@ const CharacterController = () => {
 
   // Handle animation transitions
   const fadeToAction = (actionName, duration = 0.2) => {
-    if (!actions[actionName]) return;
-
-    const newAction = actions[actionName];
-    if (activeAction === newAction) return;
-
-    if (activeAction) {
-      activeAction.fadeOut(duration);
+    if (!actions[actionName]) {
+      console.warn(`Action "${actionName}" not found`);
+      return;
     }
 
+    const newAction = actions[actionName];
+    
+    // Reset mixer first by stopping all actions
+    if (mixer) {
+      // We don't want to stop all actions, just fade between them
+      if (activeAction && activeAction !== newAction) {
+        activeAction.fadeOut(duration);
+      }
+    }
+
+    // Reset and play the new action
     newAction.reset()
       .setEffectiveTimeScale(1)
       .setEffectiveWeight(1)
@@ -227,19 +311,67 @@ const CharacterController = () => {
 
   // Toggle game mode
   const toggleGameMode = () => {
-    setIsGameMode(!isGameMode);
-    if (!isGameMode) {
+    // Always scroll to top when toggling game mode
+    window.scrollTo(0, 0);
+    
+    if (gameOver) {
+      // Reset game state
+      setGameOver(false);
+      setScore(0);
+      if (model) {
+        model.position.copy(initialPosition.current);
+      }
+    }
+    
+    const startingGame = !isGameMode;
+    setIsGameMode(startingGame);
+    
+    if (startingGame) {
+      // Starting game - make sure to reset mixer before playing a new animation
+      if (mixer) {
+        mixer.stopAllAction();
+      }
+      
       fadeToAction('Running');
+      
       if (camera && model) {
         camera.position.set(model.position.x, model.position.y + 3, model.position.z - 5);
         camera.lookAt(model.position.x, model.position.y + 2, model.position.z + 10);
       }
     } else {
+      // Stopping game
+      if (mixer) {
+        mixer.stopAllAction();
+      }
+      
       fadeToAction('Dance');
+      
       if (model) {
         model.rotation.set(0, 0, 0);
       }
     }
+  };
+
+  // Start a new game after death
+  const restartGame = () => {
+    // Always scroll to top when restarting
+    window.scrollTo(0, 0);
+    
+    setGameOver(false);
+    setScore(0);
+    
+    // Reset character position
+    if (model) {
+      model.position.copy(initialPosition.current);
+    }
+    
+    // Reset all animations
+    if (mixer) {
+      mixer.stopAllAction();
+    }
+    
+    setIsGameMode(true);
+    fadeToAction('Running');
   };
 
   return (
@@ -258,74 +390,103 @@ const CharacterController = () => {
         </>
       )}
       
+      {/* User Info Display */}
+      <div className="user-info">
+        {currentUser ? (
+          <>
+            <span className="username">{currentUser.username}</span>
+            <span className="score-value">Score: {score}</span>
+            <span className="high-score-value">High Score: {highScore}</span>
+          </>
+        ) : (
+          <Link to="/login" className="login-prompt">
+            Login to save your score
+          </Link>
+        )}
+      </div>
+      
       {/* Score Display */}
       {isGameMode && (
         <div className="score-display">
           Score: {score}
         </div>
       )}
+      
+      {/* Top Controls (moved from bottom to top) */}
+      <div className="top-controls">
+        {!gameOver && !isGameMode && (
+          <>
+            <button
+              className="button button-red"
+              onClick={toggleGameMode}
+            >
+              Start Game
+            </button>
+            
+            {/* <div className="animation-controls">
+              {['Walking', 'Running', 'Dance', 'Death', 'Jump'].map((state) => (
+                <button
+                  key={state}
+                  className="button button-green"
+                  onClick={() => {
+                    if (state === 'Jump') {
+                      fadeToAction('Jump');
+                      setTimeout(() => {
+                        fadeToAction('Dance');
+                      }, 1000);
+                    } else {
+                      fadeToAction(state);
+                    }
+                  }}
+                >
+                  {state}
+                </button>
+              ))}
+            </div> */}
+          </>
+        )}
+        
+        {/* Only show Stop Game button when in game mode */}
+        {isGameMode && !gameOver && (
+          <button
+            className="button button-red stop-button"
+            onClick={toggleGameMode}
+          >
+            Stop Game
+          </button>
+        )}
+        
+        <Link to="/" className="back-home-btn">
+          Back to Home
+        </Link>
+      </div>
   
       {/* Game Over Message */}
       {gameOver && (
         <div className="game-over">
           <h2>Game Over!</h2>
           <p>Final Score: {score}</p>
+          <div className="game-over-buttons">
+            <button className="restart-button" onClick={restartGame}>
+              Start Again
+            </button>
+            <button className="extra-life-button">
+              Play Banana Game for Extra Life
+            </button>
+          </div>
+          <Link to="/" className="back-home-btn">
+            Back to Home
+          </Link>
         </div>
       )}
   
-      {/* Updated Game Instructions */}
+      {/* Game Instructions */}
       {isGameMode && !gameOver && (
         <div className="instructions">
           <p>Use ← → arrow keys to move</p>
           <p>Press ↑ or Space to jump</p>
         </div>
       )}
-      
-      {/* Game Controls - Removed movement buttons, kept main toggle */}
-      <div className="controls-container">
-        <button
-          className="button button-red"
-          onClick={toggleGameMode}
-        >
-          {isGameMode ? 'Stop Game' : 'Start Game'}
-        </button>
-  
-        {/* Animation Controls (Only shown when not in game mode) */}
-        {!isGameMode && (
-          <>
-            <div className="button-row">
-              {['Walking', 'Running', 'Dance', 'Death'].map((state) => (
-                <button
-                  key={state}
-                  className="button button-green"
-                  onClick={() => fadeToAction(state)}
-                >
-                  {state}
-                </button>
-              ))}
-            </div>
-  
-            <div className="button-row">
-              <button
-                className="button button-purple"
-                onClick={() => {
-                  fadeToAction('Jump');
-                  setTimeout(() => {
-                    fadeToAction('Walking');
-                  }, 1000);
-                }}
-              >
-                Jump
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-  
-      {/* High Score Display */}
-      <div className="high-score">
-        High Score: {Math.max(score, localStorage.getItem('highScore') || 0)}
-      </div>
     </div>
   );
 };
