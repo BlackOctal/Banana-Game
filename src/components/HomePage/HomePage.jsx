@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './HomePage.css';
+import bananaCharacter from '../../assets/banana-character.svg';
 
 const HomePage = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -20,32 +21,60 @@ const HomePage = () => {
   
   return (
     <div className="home-container">
+      
+      {/* Main content */}
       <div className="home-content">
-        <h1>Banana Runner</h1>
-        <p>Run through obstacles, collect bananas, and set new high scores!</p>
-        
+        {/* User authentication message */}
         {currentUser && (
           <div className="welcome-message">
-            Welcome back, <span className="username-display">{currentUser.username}</span>!
-            <p className="user-high-score">Your high score: {currentUser.highScore || 0}</p>
+            Welcome, <span className="username-display">{currentUser.username}</span>!
+            <div className="user-high-score">High Score: {currentUser.highScore || 0}</div>
           </div>
         )}
         
-        <div className="button-container">
-          <Link to="/game" className="start-button">Start Game</Link>
+        {/* Auth buttons */}
+        
+     
           
-          <div className="auth-buttons">
-            {currentUser ? (
-              <button onClick={handleLogout} className="auth-button logout-button">
-                Logout
-              </button>
-            ) : (
-              <>
-                <Link to="/login" className="auth-button">Login</Link>
-                <Link to="/register" className="auth-button">Register</Link>
-              </>
-            )}
+      
+        
+        
+        {/* Banana character */}
+        <div className="banana-character">
+        <img 
+          src={bananaCharacter} 
+          alt="Banana Character" 
+          style={{ width: '100%', height: '100%' }}
+        />
+        </div>
+        
+        {/* Game title */}
+        <div className="game-title">
+          <h1 className="title-text">BANANA</h1>
+          <h1 className="title-text small">RUNNER</h1>
+        
+        </div>
+        <div className='auth'>
+          <Link to="/login" className="auth-button">Login</Link>
+          <Link to="/register" className="auth-button">Register</Link>
           </div>
+        
+        
+        {/* Play button */}
+        <Link to="/game" className="play-button">
+          PLAY
+        </Link>
+        
+        {/* Bottom icon buttons */}
+        <div className="icon-buttons">
+          
+          {currentUser && (
+            <button onClick={handleLogout} className="icon-button" title="Logout">
+              ⎋
+            </button>
+          )}
+          
+          
         </div>
       </div>
     </div>

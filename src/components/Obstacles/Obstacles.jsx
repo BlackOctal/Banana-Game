@@ -4,8 +4,8 @@ import './Obstacles.css';
 
 const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
   const [obstacles, setObstacles] = useState([]);
-  const obstacleSpeed = 0.1; // Reduced speed from 0.2 to 0.1
-  const spawnInterval = 3000; // Increased spawn interval from 2000 to 3000ms for more spacing
+  const obstacleSpeed = 0.03; // Reduced speed from 0.2 to 0.1
+  const spawnInterval = 5000; // Increased spawn interval from 2000 to 3000ms for more spacing
   
   // Initialize obstacles
   useEffect(() => {
@@ -32,7 +32,7 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
       // Random x position between -8 and 8 (road width)
       mesh.position.x = Math.random() * 16 - 8;
       mesh.position.y = 1; // Height of obstacle
-      mesh.position.z = 50; // Start from in front (positive Z) instead of behind
+      mesh.position.z = 80; // Start from in front (positive Z) instead of behind
       
       scene.add(mesh);
       
@@ -87,7 +87,7 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
               playerPosition.z
             ).distanceTo(obstacle.mesh.position);
             
-            if (distance < 2) {
+            if (distance < 4) {
               onCollision(obstacle);
               scene.remove(obstacle.mesh);
               return false;

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320">
+  <!-- Banana Body -->
+  <path d="M100 30 C130 40 160 90 160 200 C160 240 140 280 100 290 C60 280 40 240 40 200 C40 90 70 40 100 30Z" fill="#FFD700" stroke="#E8B800" stroke-width="4"/>
+  
+  <!-- Shadow/Highlight -->
+  <path d="M100 30 C130 40 160 90 160 200 C160 240 140 280 100 290 Z" fill="#FFEA80" stroke-width="0"/>
+  <path d="M100 30 C70 40 40 90 40 200 C40 240 60 280 100 290 Z" fill="#E8B800" stroke-width="0"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="75" cy="80" rx="10" ry="15" fill="white" stroke="#333" stroke-width="2"/>
+  <ellipse cx="125" cy="80" rx="10" ry="15" fill="white" stroke="#333" stroke-width="2"/>
+  
+  <!-- Pupils -->
+  <circle cx="75" cy="80" r="5" fill="#0066CC"/>
+  <circle cx="125" cy="80" r="5" fill="#0066CC"/>
+  
+  <!-- Eyebrows -->
+  <path d="M65 60 C70 55 80 60 85 65" fill="none" stroke="#9933CC" stroke-width="4" stroke-linecap="round"/>
+  <path d="M115 65 C120 60 130 55 135 60" fill="none" stroke="#9933CC" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Smile -->
+  <path d="M75 110 C85 125 115 125 125 110" fill="none" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Blush -->
+  <circle cx="60" cy="105" r="10" fill="#FF9999" opacity="0.6"/>
+  <circle cx="140" cy="105" r="10" fill="#FF9999" opacity="0.6"/>
+  
+  <!-- Arms -->
+  <path d="M55 150 C40 155 30 160 25 180" fill="none" stroke="#9933CC" stroke-width="12" stroke-linecap="round"/>
+  <path d="M145 150 C160 155 170 160 175 180" fill="none" stroke="#9933CC" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Hands -->
+  <circle cx="25" cy="180" r="10" fill="#9933CC"/>
+  <circle cx="175" cy="180" r="10" fill="#9933CC"/>
+  
+  <!-- Legs -->
+  <path d="M80 290 C75 300 75 310 80 320" fill="none" stroke="#006600" stroke-width="12" stroke-linecap="round"/>
+  <path d="M120 290 C125 300 125 310 120 320" fill="none" stroke="#006600" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Feet -->
+  <ellipse cx="80" cy="320" rx="15" ry="5" fill="#006600"/>
+  <ellipse cx="120" cy="320" rx="15" ry="5" fill="#006600"/>
+</svg>

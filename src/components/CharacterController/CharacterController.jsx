@@ -423,26 +423,6 @@ const CharacterController = () => {
               Start Game
             </button>
             
-            {/* <div className="animation-controls">
-              {['Walking', 'Running', 'Dance', 'Death', 'Jump'].map((state) => (
-                <button
-                  key={state}
-                  className="button button-green"
-                  onClick={() => {
-                    if (state === 'Jump') {
-                      fadeToAction('Jump');
-                      setTimeout(() => {
-                        fadeToAction('Dance');
-                      }, 1000);
-                    } else {
-                      fadeToAction(state);
-                    }
-                  }}
-                >
-                  {state}
-                </button>
-              ))}
-            </div> */}
           </>
         )}
         
@@ -484,7 +464,6 @@ const CharacterController = () => {
       {isGameMode && !gameOver && (
         <div className="instructions">
           <p>Use ← → arrow keys to move</p>
-          <p>Press ↑ or Space to jump</p>
         </div>
       )}
     </div>
