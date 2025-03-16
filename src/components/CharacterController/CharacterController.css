@@ -17,7 +17,6 @@
   left: 0;
 }
 
-/* Top controls - new positioning at the top */
 .top-controls {
   position: fixed;
   top: 10%;
@@ -242,7 +241,7 @@
   background-color: rgba(37, 117, 252, 0.9);
 }
 
-/* Media queries for responsive design */
+
 @media (max-width: 768px) {
   .top-controls {
     width: 95%;

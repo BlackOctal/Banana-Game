@@ -4,10 +4,9 @@ import './Obstacles.css';
 
 const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
   const [obstacles, setObstacles] = useState([]);
-  const obstacleSpeed = 0.03; // Reduced speed from 0.2 to 0.1
-  const spawnInterval = 5000; // Increased spawn interval from 2000 to 3000ms for more spacing
-  
-  // Initialize obstacles
+  const obstacleSpeed = 0.03; 
+  const spawnInterval = 5000; 
+
   useEffect(() => {
     if (!scene || !isGameMode) return;
     
@@ -21,7 +20,7 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
       square: new THREE.BoxGeometry(2, 2, 2)
     };
     
-    // Function to create a new obstacle
+    // obstacle create part
     const createObstacle = () => {
       const type = Math.random() > 0.5 ? 'circle' : 'square';
       const geometry = geometries[type];
@@ -29,11 +28,10 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
       
       const mesh = new THREE.Mesh(geometry, material);
       
-      // Random x position between -8 and 8 (road width)
+      // random obstacles positions
       mesh.position.x = Math.random() * 16 - 8;
-      mesh.position.y = 1; // Height of obstacle
-      mesh.position.z = 80; // Start from in front (positive Z) instead of behind
-      
+      mesh.position.y = 1; 
+      mesh.position.z = 80; 
       scene.add(mesh);
       
       return {
@@ -43,7 +41,6 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
       };
     };
     
-    // Spawn obstacles interval
     const spawnObstacle = setInterval(() => {
       if (!isGameMode) return;
       
@@ -51,7 +48,6 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
       setObstacles(prev => [...prev, newObstacle]);
     }, spawnInterval);
     
-    // Cleanup
     return () => {
       clearInterval(spawnObstacle);
       obstacles.forEach(obstacle => {
@@ -61,7 +57,6 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
     };
   }, [scene, isGameMode]);
   
-  // Update obstacles position and check collisions
   useEffect(() => {
     if (!isGameMode) return;
     
@@ -70,16 +65,14 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
       
       setObstacles(prev => {
         const updatedObstacles = prev.filter(obstacle => {
-          // Move obstacle toward the character (negative Z direction)
           obstacle.mesh.position.z -= obstacleSpeed;
           
-          // Remove obstacle if it's passed the character
+          // Remove obstacle when character pass it
           if (obstacle.mesh.position.z < -20) {
             scene.remove(obstacle.mesh);
             return false;
           }
           
-          // Check collision with player
           if (playerPosition) {
             const distance = new THREE.Vector3(
               playerPosition.x,

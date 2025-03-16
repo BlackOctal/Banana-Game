@@ -26,7 +26,7 @@ const CharacterController = () => {
   const [highScore, setHighScore] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Load user data
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) {
@@ -34,28 +34,20 @@ const CharacterController = () => {
       const storedHighScore = user.highScore || 0;
       setHighScore(storedHighScore);
     } else {
-      // Get high score from localStorage if no user is logged in
       const localHighScore = parseInt(localStorage.getItem('highScore') || '0');
       setHighScore(localHighScore);
     }
   }, []);
 
-  // Scroll to top of the page when component mounts
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  // Update high score
+//user high score update
   useEffect(() => {
     if (score > highScore) {
       setHighScore(score);
       
       if (currentUser) {
-        // Update user's high score
         const updatedUser = { ...currentUser, highScore: score };
         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
         
-        // Update users array if needed
         const users = JSON.parse(localStorage.getItem('users')) || [];
         const updatedUsers = users.map(user => {
           if (user.username === currentUser.username) {
@@ -65,12 +57,12 @@ const CharacterController = () => {
         });
         localStorage.setItem('users', JSON.stringify(updatedUsers));
       } else {
-        // Store high score in localStorage for non-logged in users
         localStorage.setItem('highScore', score.toString());
       }
     }
   }, [score, highScore, currentUser]);
 
+  // character control key 
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (!isGameMode) return;
@@ -82,7 +74,7 @@ const CharacterController = () => {
         case 'ArrowRight':
           moveCharacter('right');
           break;
-        case ' ': // Spacebar
+        case ' ': 
         case 'ArrowUp':
           handleGameJump();
           break;
@@ -91,20 +83,18 @@ const CharacterController = () => {
       }
     };
 
-    // Add event listener
     window.addEventListener('keydown', handleKeyDown);
 
-    // Cleanup
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isGameMode]); 
 
-  // Handle collision with obstacles
+  // when character hit obstacles character act like dead and game is over
   const handleCollision = (obstacle) => {
     setGameOver(true);
     
-    // Stop all current animations before playing death
+    
     if (mixer) {
       mixer.stopAllAction();
     }
@@ -113,17 +103,14 @@ const CharacterController = () => {
     setIsGameMode(false);
   };
 
-  // Initialize Three.js scene
   useEffect(() => {
     if (!containerRef.current) return;
 
     console.log("Initializing scene");
     
-    // Scene setup
     const newScene = new THREE.Scene();
     newScene.background = new THREE.Color(0x87ceeb); // Sky blue background
 
-    // Camera setup
     const newCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 100);
     newCamera.position.set(-5, 3, 10);
     newCamera.lookAt(0, 2, 0);
@@ -134,7 +121,6 @@ const CharacterController = () => {
     newRenderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(newRenderer.domElement);
 
-    // Lights
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 3);
     hemiLight.position.set(0, 20, 0);
     newScene.add(hemiLight);
@@ -149,14 +135,14 @@ const CharacterController = () => {
 
     console.log("Scene setup complete");
 
-    // Load character model
+    // character model 
     const loader = new GLTFLoader();
     loader.load(
       'models/gltf/RobotExpressive/RobotExpressive.glb', 
       (gltf) => {
         console.log("Model loaded successfully", gltf);
         const newModel = gltf.scene;
-        newModel.position.y = 0.5; // Lift character slightly above road
+        newModel.position.y = 0.5; 
         newScene.add(newModel);
         setModel(newModel);
         initialPosition.current.copy(newModel.position);
@@ -177,7 +163,7 @@ const CharacterController = () => {
 
         setActions(newActions);
         
-        // Play initial animation
+        // Character plays dance animation 
         if (newActions['Dance']) {
           newActions['Dance'].reset().play();
           setActiveAction(newActions['Dance']);
@@ -191,7 +177,6 @@ const CharacterController = () => {
       }
     );
 
-    // Handle window resize
     const handleResize = () => {
       if (camera && renderer) {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -210,7 +195,7 @@ const CharacterController = () => {
     };
   }, []);
 
-  // Update score
+  // Update score part
   useEffect(() => {
     if (isGameMode) {
       const scoreInterval = setInterval(() => {
@@ -221,7 +206,6 @@ const CharacterController = () => {
     }
   }, [isGameMode]);
 
-  // Animation loop
   useEffect(() => {
     if (!renderer || !scene || !camera || !mixer) return;
 
@@ -230,7 +214,7 @@ const CharacterController = () => {
       const delta = clock.getDelta();
       mixer.update(delta);
 
-      // Update camera for game mode
+      // character view while running
       if (isGameMode && model) {
         const idealOffset = new THREE.Vector3(0, 10, -15);  // Increased y from 5 to 10
         const idealLookat = new THREE.Vector3(0, 2, 10);    
@@ -250,7 +234,6 @@ const CharacterController = () => {
     animate();
   }, [renderer, scene, camera, mixer, clock, model, isGameMode]);
 
-  // Handle animation transitions
   const fadeToAction = (actionName, duration = 0.2) => {
     if (!actions[actionName]) {
       console.warn(`Action "${actionName}" not found`);
@@ -259,15 +242,13 @@ const CharacterController = () => {
 
     const newAction = actions[actionName];
     
-    // Reset mixer first by stopping all actions
     if (mixer) {
-      // We don't want to stop all actions, just fade between them
+
       if (activeAction && activeAction !== newAction) {
         activeAction.fadeOut(duration);
       }
     }
 
-    // Reset and play the new action
     newAction.reset()
       .setEffectiveTimeScale(1)
       .setEffectiveWeight(1)
@@ -277,7 +258,7 @@ const CharacterController = () => {
     setActiveAction(newAction);
   };
 
-  // Handle movement
+  // character movements control
   const moveCharacter = (direction) => {
     if (!model) return;
     const moveDistance = 3;
@@ -288,11 +269,10 @@ const CharacterController = () => {
       model.position.x -= moveDistance;
     }
     
-    // Clamp character position to road width
     model.position.x = THREE.MathUtils.clamp(model.position.x, -8, 8);
   };
 
-  // Handle jump
+
   const handleGameJump = () => {
     if (!isGameMode || !actions['Jump']) return;
     
@@ -309,13 +289,9 @@ const CharacterController = () => {
     }, 400);
   };
 
-  // Toggle game mode
   const toggleGameMode = () => {
-    // Always scroll to top when toggling game mode
-    window.scrollTo(0, 0);
     
     if (gameOver) {
-      // Reset game state
       setGameOver(false);
       setScore(0);
       if (model) {
@@ -327,7 +303,6 @@ const CharacterController = () => {
     setIsGameMode(startingGame);
     
     if (startingGame) {
-      // Starting game - make sure to reset mixer before playing a new animation
       if (mixer) {
         mixer.stopAllAction();
       }
@@ -339,7 +314,6 @@ const CharacterController = () => {
         camera.lookAt(model.position.x, model.position.y + 2, model.position.z + 10);
       }
     } else {
-      // Stopping game
       if (mixer) {
         mixer.stopAllAction();
       }
@@ -352,20 +326,15 @@ const CharacterController = () => {
     }
   };
 
-  // Start a new game after death
-  const restartGame = () => {
-    // Always scroll to top when restarting
-    window.scrollTo(0, 0);
-    
+  // after dead charcter start to run again
+  const restartGame = () => {   
     setGameOver(false);
     setScore(0);
     
-    // Reset character position
     if (model) {
       model.position.copy(initialPosition.current);
     }
     
-    // Reset all animations
     if (mixer) {
       mixer.stopAllAction();
     }
@@ -390,7 +359,6 @@ const CharacterController = () => {
         </>
       )}
       
-      {/* User Info Display */}
       <div className="user-info">
         {currentUser ? (
           <>
@@ -405,14 +373,12 @@ const CharacterController = () => {
         )}
       </div>
       
-      {/* Score Display */}
       {isGameMode && (
         <div className="score-display">
           Score: {score}
         </div>
       )}
       
-      {/* Top Controls (moved from bottom to top) */}
       <div className="top-controls">
         {!gameOver && !isGameMode && (
           <>
@@ -426,7 +392,6 @@ const CharacterController = () => {
           </>
         )}
         
-        {/* Only show Stop Game button when in game mode */}
         {isGameMode && !gameOver && (
           <button
             className="button button-red stop-button"
@@ -441,7 +406,6 @@ const CharacterController = () => {
         </Link>
       </div>
   
-      {/* Game Over Message */}
       {gameOver && (
         <div className="game-over">
           <h2>Game Over!</h2>
@@ -460,7 +424,6 @@ const CharacterController = () => {
         </div>
       )}
   
-      {/* Game Instructions */}
       {isGameMode && !gameOver && (
         <div className="instructions">
           <p>Use ← → arrow keys to move</p>

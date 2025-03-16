@@ -7,7 +7,6 @@ const HomePage = () => {
   const [currentUser, setCurrentUser] = useState(null);
   
   useEffect(() => {
-    // Check if user is logged in
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) {
       setCurrentUser(user);
@@ -22,9 +21,7 @@ const HomePage = () => {
   return (
     <div className="home-container">
       
-      {/* Main content */}
       <div className="home-content">
-        {/* User authentication message */}
         {currentUser && (
           <div className="welcome-message">
             Welcome, <span className="username-display">{currentUser.username}</span>!
@@ -32,14 +29,6 @@ const HomePage = () => {
           </div>
         )}
         
-        {/* Auth buttons */}
-        
-     
-          
-      
-        
-        
-        {/* Banana character */}
         <div className="banana-character">
         <img 
           src={bananaCharacter} 
@@ -48,7 +37,6 @@ const HomePage = () => {
         />
         </div>
         
-        {/* Game title */}
         <div className="game-title">
           <h1 className="title-text">BANANA</h1>
           <h1 className="title-text small">RUNNER</h1>
@@ -60,12 +48,10 @@ const HomePage = () => {
           </div>
         
         
-        {/* Play button */}
         <Link to="/game" className="play-button">
           PLAY
         </Link>
         
-        {/* Bottom icon buttons */}
         <div className="icon-buttons">
           
           {currentUser && (

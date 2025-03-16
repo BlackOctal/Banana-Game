@@ -22,9 +22,7 @@ const Login = () => {
     setError('');
     
     try {
-      // In a real application, you would make an API call to your backend
-      // For now, we'll simulate a login by checking localStorage
-      const users = JSON.parse(localStorage.getItem('users')) || [];
+         const users = JSON.parse(localStorage.getItem('users')) || [];
       const user = users.find(
         u => u.username === formData.username && u.password === formData.password
       );
@@ -34,13 +32,11 @@ const Login = () => {
         return;
       }
       
-      // Set user as logged in
       localStorage.setItem('currentUser', JSON.stringify({
         username: user.username,
         highScore: user.highScore || 0
       }));
       
-      // Redirect to home page
       navigate('/');
     } catch (err) {
       setError('Login failed. Please try again.');

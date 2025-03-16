@@ -22,23 +22,19 @@ const Register = () => {
     e.preventDefault();
     setError('');
     
-    // Validate password match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
     
     try {
-      // For now, we'll use localStorage to simulate registration
       const users = JSON.parse(localStorage.getItem('users')) || [];
       
-      // Check if username already exists
       if (users.some(user => user.username === formData.username)) {
         setError('Username already exists');
         return;
       }
       
-      // Add new user
       const newUser = {
         username: formData.username,
         password: formData.password,
@@ -48,13 +44,11 @@ const Register = () => {
       users.push(newUser);
       localStorage.setItem('users', JSON.stringify(users));
       
-      // Set user as logged in
       localStorage.setItem('currentUser', JSON.stringify({
         username: newUser.username,
         highScore: newUser.highScore
       }));
       
-      // Redirect to home page
       navigate('/');
     } catch (err) {
       setError('Registration failed. Please try again.');
