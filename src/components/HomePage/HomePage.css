@@ -37,18 +37,6 @@
   padding: 20px;
 }
 
-/* Road/path in the middle */
-.game-road {
-  position: absolute;
-  bottom: 0;
-  width: 50%;
-  height: 30%;
- 
-  border-top-left-radius: 50px;
-  border-top-right-radius: 50px;
-  z-index: -1;
-}
-
 /* Title styling */
 .game-title {
   display: flex;
@@ -79,7 +67,17 @@
   position: relative;
 }
 
-/* Button styling */
+/* Game buttons container */
+.game-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Play button styling */
 .play-button {
   padding: 15px 60px;
   font-size: 2rem;
@@ -93,7 +91,8 @@
   box-shadow: 0 8px 0 #CD8500, 0 15px 20px rgba(0, 0, 0, 0.3);
   transition: transform 0.1s, box-shadow 0.1s;
   text-align: center;
-  margin-top: 20px;
+  width: 100%;
+  text-decoration: none;
   position: relative;
   z-index: 2;
 }
@@ -106,6 +105,34 @@
 .play-button:active {
   transform: translateY(8px);
   box-shadow: 0 0 0 #CD8500, 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Character button */
+.character-button {
+  padding: 12px 30px;
+  font-size: 1.4rem;
+  font-family: 'Fredoka One', cursive;
+  background-color: #9C27B0;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 0 6px 0 #6A1B9A, 0 10px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s, box-shadow 0.1s;
+  text-align: center;
+  width: 100%;
+  text-decoration: none;
+}
+
+.character-button:hover {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 #6A1B9A, 0 8px 10px rgba(0, 0, 0, 0.2);
+}
+
+.character-button:active {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 #6A1B9A, 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Icon buttons */
@@ -139,12 +166,74 @@
   box-shadow: 0 2px 0 #CD8500, 0 6px 8px rgba(0, 0, 0, 0.2);
 }
 
-.icon-button.left {
-  left: 20px;
+/* Auth buttons */
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+  margin-top: 10px;
 }
 
-.icon-button.right {
-  right: 20px;
+.auth-button {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #555;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: 'Fredoka One', cursive;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.auth-button:hover {
+  background-color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+}
+
+/* User info */
+.welcome-message {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 12px 15px;
+  border-radius: 10px;
+  font-family: Arial, sans-serif;
+  color: white;
+  font-size: 0.9rem;
+  max-width: 200px;
+}
+
+.username-display {
+  font-weight: bold;
+  color: #FF9900;
+  font-size: 1.1rem;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.user-high-score {
+  margin-top: 2px;
+  font-size: 0.9rem;
+}
+
+.unlocked-characters {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+}
+
+.character-dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 /* Responsive adjustments */
@@ -158,6 +247,10 @@
   .play-button {
     padding: 12px 40px;
     font-size: 1.8rem;
+  }
+  .character-button {
+    padding: 10px 25px;
+    font-size: 1.2rem;
   }
   .icon-button {
     width: 50px;
@@ -176,6 +269,10 @@
     padding: 10px 30px;
     font-size: 1.5rem;
   }
+  .character-button {
+    padding: 8px 20px;
+    font-size: 1.1rem;
+  }
   .icon-button {
     width: 40px;
     height: 40px;
@@ -185,46 +282,8 @@
     width: 120px;
     height: 160px;
   }
-}
-
-/* User authentication related styles */
-
-
-.auth-button {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #555;
-  border: none;
-  border-radius: 20px;
-  padding: 5px 15px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  font-family: 'Fredoka One', cursive;
- 
-}
-
-.auth-button:hover {
-  background-color: rgba(255, 255, 255, 0.95);
-}
-
-.welcome-message {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 8px 15px;
-  border-radius: 20px;
-  font-family: Arial, sans-serif;
-  color: #333;
-  font-size: 0.9rem;
-  max-width: 200px;
-}
-
-.username-display {
-  font-weight: bold;
-  color: #FF9900;
-}
-
-.user-high-score {
-  margin-top: 2px;
-  font-size: 0.8rem;
+  .welcome-message {
+    max-width: 150px;
+    padding: 8px 12px;
+  }
 }

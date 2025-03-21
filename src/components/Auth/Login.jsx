@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { login, isAuthenticated } from '../../services/auth';
 import './Auth.css';
 
 const Login = () => {
@@ -8,7 +9,15 @@ const Login = () => {
     password: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  
+  // Check if already logged in
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/');
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -20,27 +29,16 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     
     try {
-         const users = JSON.parse(localStorage.getItem('users')) || [];
-      const user = users.find(
-        u => u.username === formData.username && u.password === formData.password
-      );
-      
-      if (!user) {
-        setError('Invalid username or password');
-        return;
-      }
-      
-      localStorage.setItem('currentUser', JSON.stringify({
-        username: user.username,
-        highScore: user.highScore || 0
-      }));
-      
+      await login(formData);
       navigate('/');
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setError(err.message || 'Login failed. Please try again.');
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,7 +73,13 @@ const Login = () => {
             />
           </div>
           
-          <button type="submit" className="auth-submit-btn">Login</button>
+          <button 
+            type="submit" 
+            className="auth-submit-btn"
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
         </form>
         
         <p className="auth-redirect">

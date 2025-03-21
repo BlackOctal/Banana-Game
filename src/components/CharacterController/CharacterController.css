@@ -5,7 +5,6 @@
   overflow: hidden;
   position: relative;
   margin-left:-60px;
-
 }
 
 .canvas-container {
@@ -55,6 +54,9 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .button:hover {
@@ -228,6 +230,16 @@
   font-size: 14px;
 }
 
+.character-indicator {
+  margin-top: 5px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  color: black;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
 .login-prompt {
   background-color: rgba(37, 117, 252, 0.7);
   color: white;
@@ -240,7 +252,6 @@
 .login-prompt:hover {
   background-color: rgba(37, 117, 252, 0.9);
 }
-
 
 @media (max-width: 768px) {
   .top-controls {

@@ -1,14 +1,11 @@
-// vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      'three/addons': path.resolve(__dirname, 'node_modules/three/examples/jsm')
-    },
-  },
+  server: {
+    port: 3000, // Change port to 3000
+    open: true  // Optional: automatically open browser
+  }
 })

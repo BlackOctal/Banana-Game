@@ -5,6 +5,10 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import InfiniteRoad from '../InfinityRoad/InfinityRoad';
 import './CharacterController.css';
 import Obstacles from '../Obstacles/Obstacles';
+import BananaGame from '../BananaGame/BananaGame';
+import { getCurrentUser } from '../../services/auth';
+import { saveScore } from '../../services/score';
+import { applyColorToModel } from '../../utils/characterColors';
 
 const CharacterController = () => {
   const navigate = useNavigate();
@@ -25,44 +29,46 @@ const CharacterController = () => {
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showBananaGame, setShowBananaGame] = useState(false);
+  const [characterColor, setCharacterColor] = useState('yellow');
 
-
+  // Load user data and high score
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    if (user) {
+    const user = getCurrentUser();
+    if (user && user._id) {
       setCurrentUser(user);
-      const storedHighScore = user.highScore || 0;
-      setHighScore(storedHighScore);
+      setHighScore(user.highScore || 0);
+      setCharacterColor(user.selectedCharacter || 'yellow');
     } else {
       const localHighScore = parseInt(localStorage.getItem('highScore') || '0');
       setHighScore(localHighScore);
     }
   }, []);
 
-//user high score update
+  // Update high score when score changes
   useEffect(() => {
     if (score > highScore) {
       setHighScore(score);
       
-      if (currentUser) {
-        const updatedUser = { ...currentUser, highScore: score };
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-        
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const updatedUsers = users.map(user => {
-          if (user.username === currentUser.username) {
-            return { ...user, highScore: score };
+      // If logged in, update user's high score on the server
+      if (currentUser && currentUser._id) {
+        const saveUserScore = async () => {
+          try {
+            await saveScore({ score, characterColor });
+          } catch (error) {
+            console.error('Error saving score:', error);
           }
-          return user;
-        });
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        };
+        
+        saveUserScore();
       } else {
+        // If not logged in, use local storage
         localStorage.setItem('highScore', score.toString());
       }
     }
-  }, [score, highScore, currentUser]);
+  }, [score, highScore, currentUser, characterColor]);
 
-  // character control key 
+  // Keyboard controls for character
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (!isGameMode) return;
@@ -90,19 +96,40 @@ const CharacterController = () => {
     };
   }, [isGameMode]); 
 
-  // when character hit obstacles character act like dead and game is over
+  // Handle collision with obstacles
   const handleCollision = (obstacle) => {
-    setGameOver(true);
-    
+    // Show banana game instead of immediate game over
+    setShowBananaGame(true);
     
     if (mixer) {
       mixer.stopAllAction();
     }
     
+    // Character plays death animation
     fadeToAction('Death');
     setIsGameMode(false);
   };
 
+  // Handle completing banana game successfully
+  const handleBananaGameComplete = () => {
+    setShowBananaGame(false);
+    
+    // Continue the game
+    if (mixer) {
+      mixer.stopAllAction();
+    }
+    
+    setIsGameMode(true);
+    fadeToAction('Running');
+  };
+
+  // Handle failing or skipping banana game
+  const handleBananaGameFail = () => {
+    setShowBananaGame(false);
+    setGameOver(true);
+  };
+
+  // Initialize scene, camera, lights, and load character model
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -135,7 +162,7 @@ const CharacterController = () => {
 
     console.log("Scene setup complete");
 
-    // character model 
+    // Load character model
     const loader = new GLTFLoader();
     loader.load(
       'models/gltf/RobotExpressive/RobotExpressive.glb', 
@@ -143,6 +170,10 @@ const CharacterController = () => {
         console.log("Model loaded successfully", gltf);
         const newModel = gltf.scene;
         newModel.position.y = 0.5; 
+        
+        // Apply character color
+        applyColorToModel(newModel, characterColor);
+        
         newScene.add(newModel);
         setModel(newModel);
         initialPosition.current.copy(newModel.position);
@@ -163,7 +194,7 @@ const CharacterController = () => {
 
         setActions(newActions);
         
-        // Character plays dance animation 
+        // Character plays dance animation initially
         if (newActions['Dance']) {
           newActions['Dance'].reset().play();
           setActiveAction(newActions['Dance']);
@@ -193,9 +224,9 @@ const CharacterController = () => {
         containerRef.current.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [characterColor]);
 
-  // Update score part
+  // Update score during gameplay
   useEffect(() => {
     if (isGameMode) {
       const scoreInterval = setInterval(() => {
@@ -206,6 +237,7 @@ const CharacterController = () => {
     }
   }, [isGameMode]);
 
+  // Animation loop
   useEffect(() => {
     if (!renderer || !scene || !camera || !mixer) return;
 
@@ -214,10 +246,10 @@ const CharacterController = () => {
       const delta = clock.getDelta();
       mixer.update(delta);
 
-      // character view while running
+      // Update camera position during gameplay
       if (isGameMode && model) {
-        const idealOffset = new THREE.Vector3(0, 10, -15);  // Increased y from 5 to 10
-        const idealLookat = new THREE.Vector3(0, 2, 10);    
+        const idealOffset = new THREE.Vector3(0, 10, -15);
+        const idealLookat = new THREE.Vector3(0, 2, 10);
         
         const modelPosition = model.position.clone();
         const currentOffset = idealOffset.clone();
@@ -234,6 +266,7 @@ const CharacterController = () => {
     animate();
   }, [renderer, scene, camera, mixer, clock, model, isGameMode]);
 
+  // Animation transition helper
   const fadeToAction = (actionName, duration = 0.2) => {
     if (!actions[actionName]) {
       console.warn(`Action "${actionName}" not found`);
@@ -243,7 +276,6 @@ const CharacterController = () => {
     const newAction = actions[actionName];
     
     if (mixer) {
-
       if (activeAction && activeAction !== newAction) {
         activeAction.fadeOut(duration);
       }
@@ -258,7 +290,7 @@ const CharacterController = () => {
     setActiveAction(newAction);
   };
 
-  // character movements control
+  // Character movement handler
   const moveCharacter = (direction) => {
     if (!model) return;
     const moveDistance = 3;
@@ -269,10 +301,11 @@ const CharacterController = () => {
       model.position.x -= moveDistance;
     }
     
+    // Limit movement to stay on the road
     model.position.x = THREE.MathUtils.clamp(model.position.x, -8, 8);
   };
 
-
+  // Jump handler
   const handleGameJump = () => {
     if (!isGameMode || !actions['Jump']) return;
     
@@ -289,8 +322,8 @@ const CharacterController = () => {
     }, 400);
   };
 
+  // Toggle game start/stop
   const toggleGameMode = () => {
-    
     if (gameOver) {
       setGameOver(false);
       setScore(0);
@@ -326,7 +359,7 @@ const CharacterController = () => {
     }
   };
 
-  // after dead charcter start to run again
+  // Restart the game after game over
   const restartGame = () => {   
     setGameOver(false);
     setScore(0);
@@ -365,6 +398,9 @@ const CharacterController = () => {
             <span className="username">{currentUser.username}</span>
             <span className="score-value">Score: {score}</span>
             <span className="high-score-value">High Score: {highScore}</span>
+            <span className="character-indicator" style={{ backgroundColor: characterColor }}>
+              {characterColor.charAt(0).toUpperCase() + characterColor.slice(1)}
+            </span>
           </>
         ) : (
           <Link to="/login" className="login-prompt">
@@ -380,7 +416,7 @@ const CharacterController = () => {
       )}
       
       <div className="top-controls">
-        {!gameOver && !isGameMode && (
+        {!gameOver && !isGameMode && !showBananaGame && (
           <>
             <button
               className="button button-red"
@@ -389,10 +425,13 @@ const CharacterController = () => {
               Start Game
             </button>
             
+            <Link to="/characters" className="button button-purple">
+              Change Character
+            </Link>
           </>
         )}
         
-        {isGameMode && !gameOver && (
+        {isGameMode && !gameOver && !showBananaGame && (
           <button
             className="button button-red stop-button"
             onClick={toggleGameMode}
@@ -406,16 +445,13 @@ const CharacterController = () => {
         </Link>
       </div>
   
-      {gameOver && (
+      {gameOver && !showBananaGame && (
         <div className="game-over">
           <h2>Game Over!</h2>
           <p>Final Score: {score}</p>
           <div className="game-over-buttons">
             <button className="restart-button" onClick={restartGame}>
               Start Again
-            </button>
-            <button className="extra-life-button">
-              Play Banana Game for Extra Life
             </button>
           </div>
           <Link to="/" className="back-home-btn">
@@ -424,10 +460,18 @@ const CharacterController = () => {
         </div>
       )}
   
-      {isGameMode && !gameOver && (
+      {isGameMode && !gameOver && !showBananaGame && (
         <div className="instructions">
           <p>Use ← → arrow keys to move</p>
+          <p>Press space or ↑ to jump</p>
         </div>
+      )}
+      
+      {showBananaGame && (
+        <BananaGame 
+          onComplete={handleBananaGameComplete}
+          onCancel={handleBananaGameFail}
+        />
       )}
     </div>
   );

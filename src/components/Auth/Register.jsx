@@ -1,15 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { register, isAuthenticated } from '../../services/auth';
 import './Auth.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({
     username: '',
+    email: '',
     password: '',
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  
+  // Check if already logged in
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/');
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -18,7 +28,7 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
@@ -27,32 +37,18 @@ const Register = () => {
       return;
     }
     
+    setLoading(true);
+    
     try {
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      
-      if (users.some(user => user.username === formData.username)) {
-        setError('Username already exists');
-        return;
-      }
-      
-      const newUser = {
-        username: formData.username,
-        password: formData.password,
-        highScore: 0
-      };
-      
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      
-      localStorage.setItem('currentUser', JSON.stringify({
-        username: newUser.username,
-        highScore: newUser.highScore
-      }));
-      
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...registerData } = formData;
+      await register(registerData);
       navigate('/');
     } catch (err) {
-      setError('Registration failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,6 +66,18 @@ const Register = () => {
               id="username"
               name="username"
               value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               required
             />
@@ -99,7 +107,13 @@ const Register = () => {
             />
           </div>
           
-          <button type="submit" className="auth-submit-btn">Register</button>
+          <button 
+            type="submit" 
+            className="auth-submit-btn"
+            disabled={loading}
+          >
+            {loading ? 'Registering...' : 'Register'}
+          </button>
         </form>
         
         <p className="auth-redirect">
