@@ -3,6 +3,8 @@
 
 .home-container {
   height: 89vh;
+  background-image: url('/src/assets/Banana.png'); /* Replace with your image path */
+
   width: 100%;
   display: flex;
   align-items: center;

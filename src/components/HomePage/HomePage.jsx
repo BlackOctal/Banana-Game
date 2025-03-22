@@ -51,11 +51,11 @@ const HomePage = () => {
         ) : null}
         
         <div className="banana-character">
-          <img 
+          {/* <img 
             src={bananaCharacter} 
             alt="Banana Character" 
             style={{ width: '100%', height: '100%' }}
-          />
+          /> */}
         </div>
         
         <div className="game-title">
