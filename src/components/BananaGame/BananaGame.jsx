@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchBananaPuzzle, validateBananaPuzzleAnswer } from '../../services/banana-api';
+import axios from 'axios';
 import './BananaGame.css';
 
 const BananaGame = ({ onComplete, onCancel }) => {
@@ -12,11 +12,11 @@ const BananaGame = ({ onComplete, onCancel }) => {
 
   // Fetch puzzle on component mount
   useEffect(() => {
-    const getPuzzle = async () => {
+    const fetchPuzzle = async () => {
       try {
         setLoading(true);
-        const puzzleData = await fetchBananaPuzzle();
-        setPuzzle(puzzleData);
+        const response = await axios.get('https://marcconrad.com/uob/banana/api.php');
+        setPuzzle(response.data);
       } catch (err) {
         setError('Failed to fetch puzzle. Please try again.');
         console.error(err);
@@ -25,17 +25,19 @@ const BananaGame = ({ onComplete, onCancel }) => {
       }
     };
 
-    getPuzzle();
+    fetchPuzzle();
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!puzzle) {
+    if (!puzzle || !puzzle.solution) {
       return;
     }
     
-    const isCorrect = validateBananaPuzzleAnswer(puzzle, answer);
+    // Convert answer to a number and compare with solution
+    const userAnswer = parseInt(answer, 10);
+    const isCorrect = userAnswer === puzzle.solution;
     
     if (isCorrect) {
       setSuccess(true);
@@ -44,6 +46,7 @@ const BananaGame = ({ onComplete, onCancel }) => {
     } else {
       setAttempts(attempts + 1);
       setError('Incorrect answer! Try again.');
+      setAnswer(''); // Clear the input
       
       // After 3 failed attempts, give up
       if (attempts >= 2) {
@@ -71,9 +74,9 @@ const BananaGame = ({ onComplete, onCancel }) => {
               What number should replace the question mark?
             </p>
 
-            {puzzle && puzzle.image && (
+            {puzzle && puzzle.question && (
               <div className="puzzle-image">
-                <img src={puzzle.image} alt="Banana Puzzle" />
+                <img src={puzzle.question} alt="Banana Puzzle" />
               </div>
             )}
 
@@ -94,7 +97,7 @@ const BananaGame = ({ onComplete, onCancel }) => {
             </form>
 
             <div className="attempts">
-              Attempts remaining: {3 - attempts}
+              Attempts remaining: 1
             </div>
           </>
         )}
