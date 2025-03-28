@@ -1,116 +1,164 @@
+// src/utils/characterColors.js
+// COMPLETE REWRITE - SIMPLIFIED APPROACH
+
 import * as THREE from 'three';
 
-// Character color configurations
+// Character color configurations - simple version
 export const CHARACTER_COLORS = {
   yellow: {
     name: 'Yellow',
     scoreRequired: 0,
-    color: new THREE.Color(0xffff00), // Standard yellow
-    materialParams: {
-      color: 0xffff00,
-      emissive: 0x111111,
-      metalness: 0.2,
-      roughness: 0.5
-    }
+    hexColor: 0xffff00 // Standard yellow
   },
   green: {
     name: 'Green',
     scoreRequired: 50,
-    color: new THREE.Color(0x00ff00), // Bright green
-    materialParams: {
-      color: 0x00ff00,
-      emissive: 0x111111,
-      metalness: 0.3,
-      roughness: 0.4
-    }
+    hexColor: 0x00ff00 // Bright green
   },
   blue: {
     name: 'Blue',
     scoreRequired: 100,
-    color: new THREE.Color(0x0088ff), // Sky blue
-    materialParams: {
-      color: 0x0088ff,
-      emissive: 0x111111,
-      metalness: 0.4,
-      roughness: 0.3
-    }
+    hexColor: 0x0088ff // Sky blue
   },
   red: {
     name: 'Red',
     scoreRequired: 150,
-    color: new THREE.Color(0xff0000), // Bright red
-    materialParams: {
-      color: 0xff0000,
-      emissive: 0x111111,
-      metalness: 0.5,
-      roughness: 0.2
-    }
+    hexColor: 0xff0000 // Bright red
   }
 };
 
-// Apply color to model
+// Simplified color application that ONLY modifies character color without changing material properties
 export const applyColorToModel = (model, colorName) => {
-  if (!model || !CHARACTER_COLORS[colorName]) {
-    return;
-  }
-
-  const colorConfig = CHARACTER_COLORS[colorName];
+  if (!model) return null;
   
-  // Traverse through all meshes in the model
+  // Default to yellow if invalid color
+  const colorConfig = CHARACTER_COLORS[colorName] || CHARACTER_COLORS.yellow;
+  const color = new THREE.Color(colorConfig.hexColor);
+  
+  // ONLY find and color the Robot body parts
   model.traverse((object) => {
-    if (object.isMesh && object.material) {
-      // Handle both single materials and material arrays
+    // Skip non-mesh objects
+    if (!object.isMesh) return;
+    
+    // Check if this is part of the robot body
+    // RobotExpressive.glb typically has parts named "Body" or similar
+    const isBodyPart = object.name.includes('Body') || 
+                      object.name.includes('Robot') ||
+                      object.name.includes('HEAD') ||
+                      object.name.includes('TORSO') ||
+                      object.name.includes('ARM') ||
+                      object.name.includes('LEG');
+    
+    if (isBodyPart) {
+      // Simply set the color WITHOUT changing other material properties
       if (Array.isArray(object.material)) {
-        object.material.forEach(material => {
-          if (material.isMeshStandardMaterial || material.isMeshPhongMaterial) {
-            // Clone the material to avoid affecting other instances
-            const newMaterial = material.clone();
-            Object.assign(newMaterial, colorConfig.materialParams);
-            return newMaterial;
+        // Handle multi-material objects
+        object.material.forEach(mat => {
+          if (mat) {
+            // Only modify the color, preserve all other properties
+            mat.color = color.clone();
           }
         });
-      } else if (object.material.isMeshStandardMaterial || object.material.isMeshPhongMaterial) {
-        // Clone the material to avoid affecting other instances
-        const newMaterial = object.material.clone();
-        Object.assign(newMaterial, colorConfig.materialParams);
-        object.material = newMaterial;
+      } else if (object.material) {
+        // Handle single material objects
+        object.material.color = color.clone();
       }
     }
   });
-
+  
   return model;
 };
 
 // Get all available character colors
 export const getAvailableColors = (unlockedCharacters) => {
   const colors = [
-    { id: 'yellow', ...CHARACTER_COLORS.yellow, unlocked: true }
+    { 
+      id: 'yellow', 
+      name: CHARACTER_COLORS.yellow.name,
+      scoreRequired: CHARACTER_COLORS.yellow.scoreRequired,
+      color: new THREE.Color(CHARACTER_COLORS.yellow.hexColor),
+      unlocked: true 
+    }
   ];
   
   // Add other colors based on unlocked status
   if (unlockedCharacters) {
     if (unlockedCharacters.green) {
-      colors.push({ id: 'green', ...CHARACTER_COLORS.green, unlocked: true });
+      colors.push({ 
+        id: 'green', 
+        name: CHARACTER_COLORS.green.name,
+        scoreRequired: CHARACTER_COLORS.green.scoreRequired,
+        color: new THREE.Color(CHARACTER_COLORS.green.hexColor),
+        unlocked: true 
+      });
     } else {
-      colors.push({ id: 'green', ...CHARACTER_COLORS.green, unlocked: false });
+      colors.push({ 
+        id: 'green', 
+        name: CHARACTER_COLORS.green.name,
+        scoreRequired: CHARACTER_COLORS.green.scoreRequired,
+        color: new THREE.Color(CHARACTER_COLORS.green.hexColor),
+        unlocked: false 
+      });
     }
     
     if (unlockedCharacters.blue) {
-      colors.push({ id: 'blue', ...CHARACTER_COLORS.blue, unlocked: true });
+      colors.push({ 
+        id: 'blue', 
+        name: CHARACTER_COLORS.blue.name,
+        scoreRequired: CHARACTER_COLORS.blue.scoreRequired,
+        color: new THREE.Color(CHARACTER_COLORS.blue.hexColor),
+        unlocked: true 
+      });
     } else {
-      colors.push({ id: 'blue', ...CHARACTER_COLORS.blue, unlocked: false });
+      colors.push({ 
+        id: 'blue', 
+        name: CHARACTER_COLORS.blue.name,
+        scoreRequired: CHARACTER_COLORS.blue.scoreRequired,
+        color: new THREE.Color(CHARACTER_COLORS.blue.hexColor),
+        unlocked: false 
+      });
     }
     
     if (unlockedCharacters.red) {
-      colors.push({ id: 'red', ...CHARACTER_COLORS.red, unlocked: true });
+      colors.push({ 
+        id: 'red', 
+        name: CHARACTER_COLORS.red.name,
+        scoreRequired: CHARACTER_COLORS.red.scoreRequired,
+        color: new THREE.Color(CHARACTER_COLORS.red.hexColor),
+        unlocked: true 
+      });
     } else {
-      colors.push({ id: 'red', ...CHARACTER_COLORS.red, unlocked: false });
+      colors.push({ 
+        id: 'red', 
+        name: CHARACTER_COLORS.red.name,
+        scoreRequired: CHARACTER_COLORS.red.scoreRequired,
+        color: new THREE.Color(CHARACTER_COLORS.red.hexColor),
+        unlocked: false 
+      });
     }
   } else {
     colors.push(
-      { id: 'green', ...CHARACTER_COLORS.green, unlocked: false },
-      { id: 'blue', ...CHARACTER_COLORS.blue, unlocked: false },
-      { id: 'red', ...CHARACTER_COLORS.red, unlocked: false }
+      { 
+        id: 'green', 
+        name: CHARACTER_COLORS.green.name,
+        scoreRequired: CHARACTER_COLORS.green.scoreRequired,
+        color: new THREE.Color(CHARACTER_COLORS.green.hexColor),
+        unlocked: false 
+      },
+      { 
+        id: 'blue', 
+        name: CHARACTER_COLORS.blue.name,
+        scoreRequired: CHARACTER_COLORS.blue.scoreRequired,
+        color: new THREE.Color(CHARACTER_COLORS.blue.hexColor),
+        unlocked: false 
+      },
+      { 
+        id: 'red', 
+        name: CHARACTER_COLORS.red.name,
+        scoreRequired: CHARACTER_COLORS.red.scoreRequired,
+        color: new THREE.Color(CHARACTER_COLORS.red.hexColor),
+        unlocked: false 
+      }
     );
   }
   

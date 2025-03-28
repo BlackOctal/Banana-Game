@@ -40,8 +40,8 @@
 
 .stop-button {
   position: fixed;
-  top: 20px;
-  left: 20px;
+  top: 60px;
+  left: 225px;
   z-index: 10;
 }
 
@@ -95,7 +95,7 @@
 
 .score-display {
   position: fixed;
-  top: 20px;
+  top: 60px;
   left: 20px;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
@@ -175,7 +175,7 @@
 
 .instructions {
   position: fixed;
-  bottom: 30px;
+  top: 55px;
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(0, 0, 0, 0.6);
@@ -191,24 +191,24 @@
 }
 
 .back-home-btn {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: black;
   color: white;
   padding: 10px 20px;
   border-radius: 50px;
   font-size: 16px;
   text-decoration: none;
   transition: all 0.3s ease;
-  margin-top: 10px;
+  margin-top: 20px;
   text-align: center;
 }
 
 .back-home-btn:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(241, 241, 241, 0.3);
 }
 
 .user-info {
   position: fixed;
-  top: 20px;
+  top: 60px;
   right: 20px;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
@@ -216,7 +216,7 @@
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 5px;
   z-index: 10;
 }
@@ -261,6 +261,7 @@
   .button {
     padding: 8px 16px;
     font-size: 14px;
+    /* background-color: red; */
   }
   
   .game-over {
@@ -279,4 +280,105 @@
     padding: 10px 20px;
     font-size: 16px;
   }
+}
+
+/* Add these styles to your existing CharacterController.css file */
+
+.color-buttons {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 100;
+}
+
+.color-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid white;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-btn:hover:not(.locked) {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.color-btn.active {
+  border: 3px solid #ffcc00;
+  box-shadow: 0 0 15px #ffcc00;
+}
+
+.color-btn.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lock-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  color: white;
+  text-shadow: 0 0 3px black;
+}
+
+.default-color {
+  background-color: #4c9e6d; /* Green */
+}
+
+.yellow-color {
+  background-color: #ffff00; /* Yellow */
+}
+
+.blue-color {
+  background-color: #0088ff; /* Blue */
+}
+
+.red-color {
+  background-color: #ff0000; /* Red */
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .color-buttons {
+    top: auto;
+    bottom: 100px;
+    left: 10px;
+  }
+  
+  .color-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Color unlocked notification */
+.color-unlock-notification {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+  animation: fadeInOut 3s forwards;
+  z-index: 101;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
 }
