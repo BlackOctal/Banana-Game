@@ -14,7 +14,6 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   
-  // Check if already logged in
   useEffect(() => {
     if (isAuthenticated()) {
       navigate('/');
@@ -40,7 +39,7 @@ const Register = () => {
     setLoading(true);
     
     try {
-      // Remove confirmPassword before sending to API
+
       const { confirmPassword, ...registerData } = formData;
       await register(registerData);
       navigate('/');

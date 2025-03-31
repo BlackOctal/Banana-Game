@@ -12,7 +12,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   
-  // Check if already logged in
   useEffect(() => {
     if (isAuthenticated()) {
       navigate('/');

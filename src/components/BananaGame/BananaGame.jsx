@@ -10,7 +10,6 @@ const BananaGame = ({ onComplete, onCancel }) => {
   const [attempts, setAttempts] = useState(0);
   const [success, setSuccess] = useState(false);
 
-  // Fetch puzzle on component mount
   useEffect(() => {
     const fetchPuzzle = async () => {
       try {
@@ -35,20 +34,18 @@ const BananaGame = ({ onComplete, onCancel }) => {
       return;
     }
     
-    // Convert answer to a number and compare with solution
     const userAnswer = parseInt(answer, 10);
     const isCorrect = userAnswer === puzzle.solution;
     
     if (isCorrect) {
       setSuccess(true);
-      // Allow a brief moment to see success message
+
       setTimeout(() => onComplete(), 1500);
     } else {
       setAttempts(attempts + 1);
       setError('Incorrect answer! Try again.');
-      setAnswer(''); // Clear the input
+      setAnswer(''); 
       
-      // After 3 failed attempts, give up
       if (attempts >= 2) {
         setTimeout(() => onCancel(), 1500);
       }

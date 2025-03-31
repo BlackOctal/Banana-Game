@@ -1,11 +1,9 @@
 import api from './api';
 
-// Save score
 export const saveScore = async (scoreData) => {
   try {
     const response = await api.post('/scores', scoreData);
     
-    // Update local user data if high score changed
     if (response.data && response.data.user) {
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = {
@@ -22,7 +20,6 @@ export const saveScore = async (scoreData) => {
   }
 };
 
-// Get user scores
 export const getUserScores = async () => {
   try {
     const response = await api.get('/scores');
@@ -32,7 +29,6 @@ export const getUserScores = async () => {
   }
 };
 
-// Get leaderboard
 export const getLeaderboard = async () => {
   try {
     const response = await api.get('/scores/leaderboard');
@@ -42,12 +38,10 @@ export const getLeaderboard = async () => {
   }
 };
 
-// Unlock character
 export const unlockCharacter = async (characterColor) => {
   try {
     const response = await api.put('/scores/unlock-character', { characterColor });
     
-    // Update local user data
     if (response.data && response.data.unlockedCharacters) {
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = {
@@ -63,12 +57,10 @@ export const unlockCharacter = async (characterColor) => {
   }
 };
 
-// Select character
 export const selectCharacter = async (characterColor) => {
   try {
     const response = await api.put('/scores/select-character', { characterColor });
     
-    // Update local user data
     if (response.data && response.data.selectedCharacter) {
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = {

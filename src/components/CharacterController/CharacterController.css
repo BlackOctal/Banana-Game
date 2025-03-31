@@ -261,7 +261,6 @@
   .button {
     padding: 8px 16px;
     font-size: 14px;
-    /* background-color: red; */
   }
   
   .game-over {
@@ -281,8 +280,6 @@
     font-size: 16px;
   }
 }
-
-/* Add these styles to your existing CharacterController.css file */
 
 .color-buttons {
   position: fixed;
@@ -332,22 +329,21 @@
 }
 
 .default-color {
-  background-color: #4c9e6d; /* Green */
+  background-color: #4c9e6d;
 }
 
 .yellow-color {
-  background-color: #ffff00; /* Yellow */
+  background-color: #ffff00;
 }
 
 .blue-color {
-  background-color: #0088ff; /* Blue */
+  background-color: #0088ff; 
 }
 
 .red-color {
-  background-color: #ff0000; /* Red */
+  background-color: #ff0000; 
 }
 
-/* Responsive adjustments for mobile */
 @media (max-width: 768px) {
   .color-buttons {
     top: auto;
@@ -361,7 +357,6 @@
   }
 }
 
-/* Color unlocked notification */
 .color-unlock-notification {
   position: fixed;
   top: 80px;

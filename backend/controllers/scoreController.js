@@ -1,27 +1,21 @@
 const Score = require('../models/Score');
 const User = require('../models/User');
 
-// @desc    Save a new score
-// @route   POST /api/scores
-// @access  Private
 exports.saveScore = async (req, res) => {
   try {
     const { score, characterColor } = req.body;
     
-    // Create the score
     const newScore = await Score.create({
       user: req.user.id,
       score,
       characterColor
     });
 
-    // Update user's high score if needed
     const user = await User.findById(req.user.id);
     
     if (score > user.highScore) {
       user.highScore = score;
       
-      // Unlock characters based on high score
       if (score >= 50 && !user.unlockedCharacters.green) {
         user.unlockedCharacters.green = true;
       }
@@ -55,9 +49,6 @@ exports.saveScore = async (req, res) => {
   }
 };
 
-// @desc    Get user's scores
-// @route   GET /api/scores
-// @access  Private
 exports.getUserScores = async (req, res) => {
   try {
     const scores = await Score.find({ user: req.user.id })
@@ -71,9 +62,6 @@ exports.getUserScores = async (req, res) => {
   }
 };
 
-// @desc    Get top scores leaderboard
-// @route   GET /api/scores/leaderboard
-// @access  Public
 exports.getLeaderboard = async (req, res) => {
   try {
     const leaderboard = await Score.find()
@@ -88,9 +76,6 @@ exports.getLeaderboard = async (req, res) => {
   }
 };
 
-// @desc    Unlock character for user
-// @route   PUT /api/scores/unlock-character
-// @access  Private
 exports.unlockCharacter = async (req, res) => {
   try {
     const { characterColor } = req.body;
@@ -105,7 +90,6 @@ exports.unlockCharacter = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     
-    // Check if user has enough score to unlock the character
     const scoreThresholds = {
       green: 50,
       blue: 100,
@@ -118,7 +102,6 @@ exports.unlockCharacter = async (req, res) => {
       });
     }
     
-    // Unlock the character
     user.unlockedCharacters[characterColor] = true;
     await user.save();
     
@@ -132,9 +115,6 @@ exports.unlockCharacter = async (req, res) => {
   }
 };
 
-// @desc    Select character for user
-// @route   PUT /api/scores/select-character
-// @access  Private
 exports.selectCharacter = async (req, res) => {
   try {
     const { characterColor } = req.body;
@@ -149,12 +129,10 @@ exports.selectCharacter = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     
-    // Check if character is unlocked (yellow is always available)
     if (characterColor !== 'yellow' && !user.unlockedCharacters[characterColor]) {
       return res.status(400).json({ message: 'This character is not unlocked yet' });
     }
-    
-    // Set selected character
+
     user.selectedCharacter = characterColor;
     await user.save();
     

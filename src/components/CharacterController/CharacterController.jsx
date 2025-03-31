@@ -10,12 +10,11 @@ import { getCurrentUser } from '../../services/auth';
 import { saveScore } from '../../services/score';
 import { applyColorToModel } from '../../utils/characterColors';
 
-// Define character colors for different score levels
 const CHARACTER_COLORS = {
-  default: 0x4c9e6d,  // Default green color
-  level1: 0xffff00,   // Yellow (50 points)
-  level2: 0x0088ff,   // Blue (100 points)
-  level3: 0xff0000    // Red (150 points)
+  default: 0x4c9e6d,  
+  level1: 0xf8ff5a,   
+  level2: 0x5dade2,   
+  level3: 0xf55c5c   
 };
 
 const CharacterController = () => {
@@ -40,7 +39,6 @@ const CharacterController = () => {
   const [showBananaGame, setShowBananaGame] = useState(false);
   const [characterColor, setCharacterColor] = useState('yellow');
   
-  // Color selection states
   const [activeColor, setActiveColor] = useState('default');
   const [unlockedColors, setUnlockedColors] = useState({
     yellow: false,
@@ -48,37 +46,33 @@ const CharacterController = () => {
     red: false
   });
 
-  // Load user data and high score
   useEffect(() => {
     const user = getCurrentUser();
-    if (user && user._id) {
+    if (user && user?._id) {
       setCurrentUser(user);
-      setHighScore(user.highScore || 0);
-      setCharacterColor(user.selectedCharacter || 'yellow');
+      setHighScore(user?.highScore || 0);
+      setCharacterColor(user?.selectedCharacter || 'yellow');
       
-      // Set unlocked colors based on high score
       if (user.highScore >= 150) {
         setUnlockedColors({ yellow: true, blue: true, red: true });
-      } else if (user.highScore >= 100) {
+      } else if (user?.highScore >= 100) {
         setUnlockedColors({ yellow: true, blue: true, red: false });
-      } else if (user.highScore >= 50) {
+      } else if (user?.highScore >= 50) {
         setUnlockedColors({ yellow: true, blue: false, red: false });
       }
       
-      // If user has unlocked colors saved, load them
-      if (user.unlockedColors) {
-        setUnlockedColors(user.unlockedColors);
+      if (user?.unlockedColors) {
+        setUnlockedColors(user?.unlockedColors);
       }
     } else {
-      const localHighScore = parseInt(localStorage.getItem('highScore') || '0');
+      const localHighScore = parseInt(localStorage?.getItem('highScore') || '0');
       setHighScore(localHighScore);
       
-      // Check for saved unlocked colors in localStorage
-      const savedUnlockedColors = JSON.parse(localStorage.getItem('unlockedColors'));
+      const savedUnlockedColors = JSON.parse(localStorage?.getItem('unlockedColors'));
       if (savedUnlockedColors) {
         setUnlockedColors(savedUnlockedColors);
       } else {
-        // Set unlocked colors based on local high score
+
         if (localHighScore >= 150) {
           setUnlockedColors({ yellow: true, blue: true, red: true });
         } else if (localHighScore >= 100) {
@@ -90,11 +84,9 @@ const CharacterController = () => {
     }
   }, []);
 
-  // Update unlocked colors based on score during gameplay
   useEffect(() => {
     if (!isGameMode) return;
     
-    // Update unlocked colors based on score milestones
     if (score >= 150 && !unlockedColors.red) {
       setUnlockedColors(prev => ({ ...prev, red: true }));
     } 
@@ -106,19 +98,17 @@ const CharacterController = () => {
     }
   }, [score, unlockedColors, isGameMode]);
 
-  // Update high score when score changes
   useEffect(() => {
     if (score > highScore) {
       setHighScore(score);
       
-      // If logged in, update user's high score on the server
       if (currentUser && currentUser._id) {
         const saveUserScore = async () => {
           try {
             await saveScore({ 
               score, 
               characterColor,
-              unlockedColors: unlockedColors // Save unlocked colors with score
+              unlockedColors: unlockedColors 
             });
           } catch (error) {
             console.error('Error saving score:', error);
@@ -127,14 +117,13 @@ const CharacterController = () => {
         
         saveUserScore();
       } else {
-        // If not logged in, use local storage
-        localStorage.setItem('highScore', score.toString());
-        localStorage.setItem('unlockedColors', JSON.stringify(unlockedColors));
+
+        localStorage?.setItem('highScore', score.toString());
+        localStorage?.setItem('unlockedColors', JSON.stringify(unlockedColors));
       }
     }
   }, [score, highScore, currentUser, characterColor, unlockedColors]);
 
-  // Keyboard controls for character
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (!isGameMode) return;
@@ -145,10 +134,6 @@ const CharacterController = () => {
           break;
         case 'ArrowRight':
           moveCharacter('right');
-          break;
-        case ' ': 
-        case 'ArrowUp':
-          handleGameJump();
           break;
         default:
           break;
@@ -162,65 +147,53 @@ const CharacterController = () => {
     };
   }, [isGameMode]); 
 
-  // Handle collision with obstacles
   const handleCollision = (obstacle) => {
-    // Show banana game instead of immediate game over
     setShowBananaGame(true);
     
     if (mixer) {
-      mixer.stopAllAction();
+      mixer?.stopAllAction();
     }
     
-    // Character plays death animation
     fadeToAction('Death');
     setIsGameMode(false);
   };
 
-  // Handle completing banana game successfully
   const handleBananaGameComplete = () => {
     setShowBananaGame(false);
     
-    // Continue the game
     if (mixer) {
-      mixer.stopAllAction();
+      mixer?.stopAllAction();
     }
     
     setIsGameMode(true);
     fadeToAction('Running');
   };
 
-  // Handle failing or skipping banana game
   const handleBananaGameFail = () => {
     setShowBananaGame(false);
     setGameOver(true);
   };
 
-  // Function to change character color when color button is clicked
   const handleColorChange = (colorKey) => {
     if (!model) return;
     
     setActiveColor(colorKey);
     const colorHex = CHARACTER_COLORS[colorKey];
     
-    // Store the current action name
     const currentActionName = activeAction ? 
       Object.keys(actions).find(key => actions[key] === activeAction) : null;
     
-    // If in game mode, briefly pause animations
     const wasInGameMode = isGameMode;
     if (wasInGameMode && mixer) {
-      mixer.stopAllAction();
+      mixer?.stopAllAction();
     }
     
-    // Apply color change
     changeModelColor(model, colorHex);
     
-    // Resume the current animation after color change
     if (currentActionName && mixer) {
       setTimeout(() => {
         fadeToAction(currentActionName, 0.1);
         
-        // If was in game mode, ensure we're in Running animation
         if (wasInGameMode) {
           fadeToAction('Running', 0.1);
         }
@@ -228,81 +201,73 @@ const CharacterController = () => {
     }
   };
 
-  // Improved function to change the material color of the model
   const changeModelColor = (model, color) => {
     if (!model) return;
     
     console.log(`Changing model color to: ${color.toString(16)}`);
     
     model.traverse((object) => {
-      if (object.isMesh && object.material) {
-        // Handle both single material and material array
-        if (Array.isArray(object.material)) {
-          object.material.forEach(material => {
-            if (material && material.color) {
-              material.color.setHex(color);
-              // Also update emissive for better effect
-              if (material.emissive) {
-                material.emissive.setHex(0x111111); // Dark emissive
+      if (object?.isMesh && object?.material) {
+
+        if (Array?.isArray(object?.material)) {
+          object?.material.forEach(material => {
+            if (material && material?.color) {
+              material?.color.setHex(color);
+
+              if (material?.emissive) {
+                material?.emissive.setHex(0x111111);
               }
             }
           });
-        } else if (object.material && object.material.color) {
-          object.material.color.setHex(color);
-          // Also update emissive for better effect
-          if (object.material.emissive) {
-            object.material.emissive.setHex(0x111111); // Dark emissive
+        } else if (object?.material && object.material.color) {
+          object.material?.color.setHex(color);
+
+          if (object?.material.emissive) {
+            object?.material.emissive.setHex(0x111111);
           }
         }
       }
     });
   };
 
-  // IMPORTANT: Updated model loading useEffect WITHOUT color dependencies
+
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef?.current) return;
 
     console.log("Initializing scene");
     
-    // Create a new scene
-    const newScene = new THREE.Scene();
-    newScene.background = new THREE.Color(0x87ceeb); // Sky blue background
 
-    // Set up camera
+    const newScene = new THREE.Scene();
+    newScene.background = new THREE.Color(0x87ceeb);
+
+
     const newCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 100);
     newCamera.position.set(-5, 3, 10);
     newCamera.lookAt(0, 2, 0);
     initialCameraPosition.current = newCamera.position.clone();
 
-    // Set up renderer
     const newRenderer = new THREE.WebGLRenderer({ antialias: true });
     newRenderer.setPixelRatio(window.devicePixelRatio);
     newRenderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(newRenderer.domElement);
 
-    // Add lights - IMPORTANT for visibility
-    // Hemisphere light
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 3);
     hemiLight.position.set(0, 20, 0);
     newScene.add(hemiLight);
 
-    // Directional light
     const dirLight = new THREE.DirectionalLight(0xffffff, 3);
     dirLight.position.set(5, 10, 7.5);
     newScene.add(dirLight);
 
-    // Ambient light - ensures everything is visible
     const ambientLight = new THREE.AmbientLight(0x404040, 2);
     newScene.add(ambientLight);
 
-    // Set state
     setScene(newScene);
     setCamera(newCamera);
     setRenderer(newRenderer);
 
     console.log("Scene setup complete");
 
-    // Create road first (separate from character loading)
     const roadGeometry = new THREE.PlaneGeometry(40, 110);
     const roadMaterial = new THREE.MeshStandardMaterial({
       color: 0x333333,
@@ -316,7 +281,6 @@ const CharacterController = () => {
     road.name = "Road";
     newScene.add(road);
 
-    // Add road markings
     const lineGeometry = new THREE.PlaneGeometry(0.5, 110);
     const lineMaterial = new THREE.MeshBasicMaterial({ 
       color: 0xffffff,
@@ -325,25 +289,22 @@ const CharacterController = () => {
     
     const centerLine = new THREE.Mesh(lineGeometry, lineMaterial);
     centerLine.rotation.x = -Math.PI / 2;
-    centerLine.position.set(0, 0.01, 0); // Slightly above road
+    centerLine.position.set(0, 0.01, 0); 
     centerLine.name = "CenterLine";
     newScene.add(centerLine);
 
-    // Load character model
     const loader = new GLTFLoader();
     loader.load(
       'models/gltf/RobotExpressive/RobotExpressive.glb', 
       (gltf) => {
         console.log("Model loaded successfully");
         
-        // Log model structure to help debug
         console.log("Model structure:", gltf.scene);
         
         const newModel = gltf.scene;
         newModel.position.y = 0.5;
         newModel.name = "RobotCharacter";
         
-        // Log all mesh names to help with debugging
         console.log("Analyzing model meshes:");
         newModel.traverse(object => {
           if (object.isMesh) {
@@ -371,13 +332,11 @@ const CharacterController = () => {
 
         setActions(newActions);
         
-        // Character plays dance animation initially
         if (newActions['Dance']) {
           newActions['Dance'].reset().play();
           setActiveAction(newActions['Dance']);
         }
         
-        // Apply initial character color after model is loaded
         if (activeColor && CHARACTER_COLORS[activeColor]) {
           changeModelColor(newModel, CHARACTER_COLORS[activeColor]);
         } else {
@@ -408,24 +367,21 @@ const CharacterController = () => {
         containerRef.current.removeChild(renderer.domElement);
       }
     };
-  }, []); // REMOVED dependencies on characterColor and activeColor
+  }, []); 
 
-  // Add a separate useEffect for color changes
   useEffect(() => {
     if (!model) return;
     
     console.log(`Applying color for activeColor: ${activeColor}`);
     
-    // Apply color change based on active color
     if (activeColor && CHARACTER_COLORS[activeColor]) {
       changeModelColor(model, CHARACTER_COLORS[activeColor]);
     } else {
-      // Fallback to normal applyColorToModel method
+
       applyColorToModel(model, characterColor);
     }
   }, [model, activeColor, characterColor]);
 
-  // Update score during gameplay
   useEffect(() => {
     if (isGameMode) {
       const scoreInterval = setInterval(() => {
@@ -436,7 +392,6 @@ const CharacterController = () => {
     }
   }, [isGameMode]);
 
-  // Animation loop
   useEffect(() => {
     if (!renderer || !scene || !camera || !mixer) return;
 
@@ -445,18 +400,15 @@ const CharacterController = () => {
       const delta = clock.getDelta();
       mixer.update(delta);
 
-      // Update camera position during gameplay
       if (isGameMode && model) {
-        // Position camera behind character for running view
+
         const idealOffset = new THREE.Vector3(0, 10, -15);
         const idealLookat = new THREE.Vector3(0, 2, 10);
         
-        // Set camera position directly behind character
         camera.position.x = model.position.x;
         camera.position.y = model.position.y + idealOffset.y; 
         camera.position.z = model.position.z + idealOffset.z;
         
-        // Look ahead of character
         camera.lookAt(
           model.position.x,
           model.position.y + idealLookat.y,
@@ -470,7 +422,6 @@ const CharacterController = () => {
     animate();
   }, [renderer, scene, camera, mixer, clock, model, isGameMode]);
 
-  // Animation transition helper
   const fadeToAction = (actionName, duration = 0.2) => {
     if (!actions[actionName]) {
       console.warn(`Action "${actionName}" not found`);
@@ -494,39 +445,19 @@ const CharacterController = () => {
     setActiveAction(newAction);
   };
 
-  // Character movement handler
   const moveCharacter = (direction) => {
     if (!model) return;
     const moveDistance = 3;
     
     if (direction === 'left') {
-      model.position.x -= moveDistance;
-    } else if (direction === 'right') {
       model.position.x += moveDistance;
+    } else if (direction === 'right') {
+      model.position.x -= moveDistance;
     }
     
-    // Limit movement to stay on the road
     model.position.x = THREE.MathUtils.clamp(model.position.x, -8, 8);
   };
 
-  // Jump handler
-  const handleGameJump = () => {
-    if (!isGameMode || !actions['Jump']) return;
-    
-    const jumpAction = actions['Jump'];
-    const runningAction = actions['Running'];
-    
-    jumpAction.reset();
-    jumpAction.setEffectiveTimeScale(2.0);
-    jumpAction.play();
-    
-    setTimeout(() => {
-      jumpAction.stop();
-      runningAction.play();
-    }, 400);
-  };
-
-  // Toggle game start/stop
   const toggleGameMode = () => {
     if (gameOver) {
       setGameOver(false);
@@ -541,23 +472,20 @@ const CharacterController = () => {
     
     if (startingGame) {
       if (mixer) {
-        // Make sure to reset all animations first
+
         mixer.stopAllAction();
       }
       
-      // Explicitly reset the model position and rotation
       if (model) {
         model.position.copy(initialPosition.current);
         model.rotation.set(0, 0, 0);
       }
       
-      // Wait a frame before starting the running animation
       setTimeout(() => {
         fadeToAction('Running');
         
-        // Reset camera position
         if (camera && model) {
-          // Position camera behind character
+   
           camera.position.set(0, 10, -15);
           camera.lookAt(0, 2, 10);
         }
@@ -574,7 +502,6 @@ const CharacterController = () => {
         model.rotation.set(0, 0, 0);
       }
       
-      // Reset camera position when not in game mode
       if (camera && initialCameraPosition.current) {
         camera.position.copy(initialCameraPosition.current);
         camera.lookAt(0, 2, 0);
@@ -582,7 +509,6 @@ const CharacterController = () => {
     }
   };
 
-  // Restart the game after game over
   const restartGame = () => {   
     setGameOver(false);
     setScore(0);
@@ -615,7 +541,6 @@ const CharacterController = () => {
         </>
       )}
 
-      {/* Color selection buttons on the left side */}
       <div className="color-buttons">
         <button 
           className={`color-btn default-color ${activeColor === 'default' ? 'active' : ''}`}

@@ -20,7 +20,6 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
       square: new THREE.BoxGeometry(2, 2, 2)
     };
     
-    // obstacle create part
     const createObstacle = () => {
       const type = Math.random() > 0.5 ? 'circle' : 'square';
       const geometry = geometries[type];
@@ -28,7 +27,6 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
       
       const mesh = new THREE.Mesh(geometry, material);
       
-      // random obstacles positions
       mesh.position.x = Math.random() * 16 - 8;
       mesh.position.y = 1; 
       mesh.position.z = 80; 
@@ -67,7 +65,6 @@ const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
         const updatedObstacles = prev.filter(obstacle => {
           obstacle.mesh.position.z -= obstacleSpeed;
           
-          // Remove obstacle when character pass it
           if (obstacle.mesh.position.z < -20) {
             scene.remove(obstacle.mesh);
             return false;

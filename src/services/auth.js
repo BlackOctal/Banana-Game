@@ -1,6 +1,5 @@
 import api from './api';
 
-// Register user
 export const register = async (userData) => {
   try {
     const response = await api.post('/auth/register', userData);
@@ -16,7 +15,6 @@ export const register = async (userData) => {
   }
 };
 
-// Login user
 export const login = async (userData) => {
   try {
     const response = await api.post('/auth/login', userData);
@@ -32,13 +30,11 @@ export const login = async (userData) => {
   }
 };
 
-// Logout user
 export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
 };
 
-// Get user profile
 export const getUserProfile = async () => {
   try {
     const response = await api.get('/auth/profile');
@@ -48,7 +44,6 @@ export const getUserProfile = async () => {
   }
 };
 
-// Update user profile
 export const updateUserProfile = async (userData) => {
   try {
     const response = await api.put('/auth/profile', userData);
@@ -65,12 +60,10 @@ export const updateUserProfile = async (userData) => {
   }
 };
 
-// Check if user is authenticated
 export const isAuthenticated = () => {
   return localStorage.getItem('token') ? true : false;
 };
 
-// Get current user
 export const getCurrentUser = () => {
   return JSON.parse(localStorage.getItem('user') || '{}');
 };

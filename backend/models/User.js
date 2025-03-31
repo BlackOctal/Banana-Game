@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema({
   },
   selectedCharacter: {
     type: String,
-    default: 'yellow' // Default character color
+    default: 'yellow' 
   },
   createdAt: {
     type: Date,
@@ -47,7 +47,6 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Hash password before saving
 UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
     return next();
@@ -58,7 +57,6 @@ UserSchema.pre('save', async function(next) {
   next();
 });
 
-// Compare password method
 UserSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };

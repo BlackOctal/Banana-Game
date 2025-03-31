@@ -13,7 +13,6 @@ const HomePage = () => {
     if (user && user._id) {
       setCurrentUser(user);
 
-      // Get available/unlocked characters
       const colors = getAvailableColors(user.unlockedCharacters);
       setUnlockedCharacters(colors.filter(color => color.unlocked));
     }
@@ -36,7 +35,7 @@ const HomePage = () => {
             {unlockedCharacters.length > 1 && (
               <div className="unlocked-characters">
                 Characters: 
-                {unlockedCharacters.map(color => (
+                {unlockedCharacters?.map(color => (
                   <span 
                     key={color.id}
                     className="character-dot"
