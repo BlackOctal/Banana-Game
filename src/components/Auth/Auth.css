@@ -31,7 +31,17 @@
   .auth-form-container h1 {
     text-align: center;
     margin-bottom: 1.5rem;
-    color: #333;
+    color: #000000;
+  }
+
+  .auth-form-containers {
+    background-color: transparent;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 450px;
+    height: 100vh;
   }
   
   .form-group {
@@ -42,7 +52,7 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #555;
+    color: #000000;
   }
   
   .form-group input {
@@ -88,11 +98,11 @@
   .auth-redirect {
     text-align: center;
     margin-top: 1.5rem;
-    color: #555;
+    color: #000000;
   }
   
   .auth-redirect a {
-    color: #2575fc;
+    color: #ffffff;
     font-weight: 500;
     text-decoration: none;
   }
@@ -105,11 +115,72 @@
     display: block;
     text-align: center;
     margin-top: 1.5rem;
-    color: #555;
+    color: #000000;
     text-decoration: none;
   }
   
   .back-home:hover {
-    color: #333;
+    color: #000000;
     text-decoration: underline;
   }
+
+.back-home-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #FFA500;
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 30px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+.back-home-button:hover {
+  background-color: #FF8C00;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.back-home-button:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.back-icon {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-text {
+  font-size: 16px;
+  font-family: 'Fredoka One', cursive;
+}
+
+.back-home {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .back-home-button {
+    padding: 8px 12px;
+    top: 15px;
+    left: 15px;
+  }
+  
+  .back-icon {
+    font-size: 16px;
+  }
+  
+  .back-text {
+    font-size: 14px;
+  }
+}

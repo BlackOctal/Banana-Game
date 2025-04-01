@@ -43,6 +43,10 @@ const Login = () => {
 
   return (
     <div className="auth-container">
+      <Link to="/" className="back-home-button">
+        <span className="back-text">Back to Home</span>
+      </Link>
+
       <div className="auth-form-container">
         <h1>Login</h1>
         {error && <div className="error-message">{error}</div>}
@@ -84,8 +88,6 @@ const Login = () => {
         <p className="auth-redirect">
           Don't have an account? <Link to="/register">Register</Link>
         </p>
-        
-        <Link to="/" className="back-home">Back to Home</Link>
       </div>
     </div>
   );

@@ -39,7 +39,6 @@ const Register = () => {
     setLoading(true);
     
     try {
-
       const { confirmPassword, ...registerData } = formData;
       await register(registerData);
       navigate('/');
@@ -53,7 +52,11 @@ const Register = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-form-container">
+      <Link to="/" className="back-home-button">
+        <span className="back-text">Back to Home</span>
+      </Link>
+
+      <div className="auth-form-containers">
         <h1>Register</h1>
         {error && <div className="error-message">{error}</div>}
         
@@ -118,8 +121,6 @@ const Register = () => {
         <p className="auth-redirect">
           Already have an account? <Link to="/login">Login</Link>
         </p>
-        
-        <Link to="/" className="back-home">Back to Home</Link>
       </div>
     </div>
   );

@@ -11,11 +11,13 @@ import { saveScore } from '../../services/score';
 import { applyColorToModel } from '../../utils/characterColors';
 
 const CHARACTER_COLORS = {
-  default: 0x4c9e6d,  
-  level1: 0xf8ff5a,   
+  default: 0xf8ff5a ,  
+  level1: 0x4c9e6d,   
   level2: 0x5dade2,   
   level3: 0xf55c5c   
 };
+
+
 
 const CharacterController = () => {
   const navigate = useNavigate();
@@ -41,7 +43,7 @@ const CharacterController = () => {
   
   const [activeColor, setActiveColor] = useState('default');
   const [unlockedColors, setUnlockedColors] = useState({
-    yellow: false,
+    green: false,  
     blue: false,
     red: false
   });
@@ -51,14 +53,14 @@ const CharacterController = () => {
     if (user && user?._id) {
       setCurrentUser(user);
       setHighScore(user?.highScore || 0);
-      setCharacterColor(user?.selectedCharacter || 'yellow');
+      setCharacterColor(user.selectedCharacter || 'green');
       
       if (user.highScore >= 150) {
-        setUnlockedColors({ yellow: true, blue: true, red: true });
-      } else if (user?.highScore >= 100) {
-        setUnlockedColors({ yellow: true, blue: true, red: false });
-      } else if (user?.highScore >= 50) {
-        setUnlockedColors({ yellow: true, blue: false, red: false });
+        setUnlockedColors({ green: true, blue: true, red: true });
+      } else if (user.highScore >= 100) {
+        setUnlockedColors({ green: true, blue: true, red: false });
+      } else if (user.highScore >= 50) {
+        setUnlockedColors({ green: true, blue: false, red: false });
       }
       
       if (user?.unlockedColors) {
@@ -74,11 +76,11 @@ const CharacterController = () => {
       } else {
 
         if (localHighScore >= 150) {
-          setUnlockedColors({ yellow: true, blue: true, red: true });
+          setUnlockedColors({ green: true, blue: true, red: true });
         } else if (localHighScore >= 100) {
-          setUnlockedColors({ yellow: true, blue: true, red: false });
+          setUnlockedColors({ green: true, blue: true, red: false });
         } else if (localHighScore >= 50) {
-          setUnlockedColors({ yellow: true, blue: false, red: false });
+          setUnlockedColors({ green: true, blue: false, red: false });
         }
       }
     }
@@ -93,8 +95,8 @@ const CharacterController = () => {
     else if (score >= 100 && !unlockedColors.blue) {
       setUnlockedColors(prev => ({ ...prev, blue: true }));
     } 
-    else if (score >= 50 && !unlockedColors.yellow) {
-      setUnlockedColors(prev => ({ ...prev, yellow: true }));
+    else if (score >= 50 && !unlockedColors.green) { 
+      setUnlockedColors(prev => ({ ...prev, green: true }));
     }
   }, [score, unlockedColors, isGameMode]);
 
@@ -542,18 +544,18 @@ const CharacterController = () => {
       )}
 
       <div className="color-buttons">
-        <button 
+      <button 
           className={`color-btn default-color ${activeColor === 'default' ? 'active' : ''}`}
           onClick={() => handleColorChange('default')}
-          title="Default Green"
+          title="Default Yellow"  
         ></button>
-        
+
         <button 
-          className={`color-btn yellow-color ${activeColor === 'level1' ? 'active' : ''} ${!unlockedColors.yellow ? 'locked' : ''}`}
-          onClick={() => unlockedColors.yellow && handleColorChange('level1')}
-          title={unlockedColors.yellow ? "Yellow (50+ Score)" : "Locked - Reach 50 points to unlock"}
+          className={`color-btn green-color ${activeColor === 'level1' ? 'active' : ''} ${!unlockedColors.green ? 'locked' : ''}`}
+          onClick={() => unlockedColors.green && handleColorChange('level1')}
+          title={unlockedColors.green ? "Green (50+ Score)" : "Locked - Reach 50 points to unlock"}
         >
-          {!unlockedColors.yellow && <span className="lock-icon">🔒</span>}
+          {!unlockedColors.green && <span className="lock-icon">🔒</span>}
         </button>
         
         <button 
