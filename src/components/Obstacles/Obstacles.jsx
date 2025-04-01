@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import * as THREE from 'three';
-import './Obstacles.css';
 
 const Obstacles = ({ scene, isGameMode, playerPosition, onCollision }) => {
   const [obstacles, setObstacles] = useState([]);
