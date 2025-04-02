@@ -2,8 +2,6 @@
 
 A 3D endless runner game where players control a character collecting bananas while avoiding obstacles.
 
-![Banana Game](https://your-screenshot-url-here.png)
-
 ## 🎮 Game Overview
 
 Banana Game is an interactive 3D web-based game built with React, Three.js, and MongoDB. Players control a character running on an infinite road while avoiding obstacles. If the character hits an obstacle, players must solve a banana math challenge to continue their run. The game features user authentication, character animations, and unlockable character colors based on your score.
