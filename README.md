@@ -104,7 +104,7 @@ npm run dev
     ├───assets                     // Game assets and resources
     ├───components
     │   ├───Auth                   // Authentication components
-    │   ├───BananaGame             // Main game components
+    │   ├───BananaGame             // Banana Math game components
     │   ├───CharacterController    // Character movement logic
     │   ├───HomePage               // Landing page components
     │   ├───InfinityRoad           // Infinite road generation
