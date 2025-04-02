@@ -29,22 +29,8 @@ const HomePage = () => {
       <div className="home-content">
         {currentUser ? (
           <div className="welcome-message">
-            <span className="username-display">{currentUser.username}</span>
+            <span className="username-display">Hi : {currentUser.username}</span>
             <div className="user-high-score">High Score: {currentUser.highScore || 0}</div>
-
-            {unlockedCharacters.length > 1 && (
-              <div className="unlocked-characters">
-                Characters: 
-                {unlockedCharacters?.map(color => (
-                  <span 
-                    key={color.id}
-                    className="character-dot"
-                    style={{ backgroundColor: `#${color.color.getHexString()}` }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            )}
           </div>
         ) : null}
 
